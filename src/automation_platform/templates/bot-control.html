@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Bot Control{% endblock %}
+{% block heading %}Bot Control & Monitoring{% endblock %}
+
+{% block content %}
+
+<p class="text-gray-600 mb-8">Select an organization to view its deployed bots.</p>
+
+<div id="orgContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/bot_control.js') }}"></script>
+{% endblock %}

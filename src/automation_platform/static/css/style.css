@@ -1,0 +1,429 @@
+/* static/css/style.css - Light Theme Update */
+
+:root {
+    --primary-color: #007bff; /* Primary Blue (e.g., for actions/links) */
+    --secondary-color: #6c757d; /* Secondary Gray */
+    --active-color: #28a745; /* Green for Active */
+    --inactive-color: #dc3545; /* Red for Inactive */
+    --warning-color: #ffc107; /* Yellow for Warning */
+    --info-color: #17a2b8; /* Cyan for Info */
+    --bg-color: #f8f9fa; /* Very Light Gray Page Background */
+    --card-bg: #ffffff; /* White Card Background */
+    --sidebar-bg: #ffffff; /* White Sidebar Background */
+    --text-color: #212529; /* Dark Text Color */
+    --console-bg: #f4f7fa; /* Light Console Background */
+    --console-text: #212529; /* Dark Console Text */
+    --border-radius: 8px;
+    --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Lighter shadow */
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+/* --- Dashboard Layout --- */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+    width: 250px;
+    background-color: var(--sidebar-bg);
+    color: var(--text-color); /* Adjusted for light theme */
+    padding: 20px 0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    height: 100%;
+}
+
+.sidebar-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 0 20px;
+}
+
+.sidebar-header h2 {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.sidebar-nav ul {
+    list-style: none;
+}
+
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    text-decoration: none;
+    color: var(--secondary-color); /* Default link color */
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+    background-color: #e9ecef; /* Light hover color */
+    color: var(--primary-color); /* Active/hover link color */
+}
+
+.sidebar-nav a i {
+    margin-right: 10px;
+    font-size: 1.1rem;
+}
+
+/* --- Main Content --- */
+.main-content {
+    margin-left: 250px; /* Offset for fixed sidebar */
+    padding: 30px;
+    flex-grow: 1;
+}
+
+.content-header {
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* --- Cards and Grid System --- */
+.card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: transform 0.2s;
+}
+
+.card-sm {
+    padding: 15px;
+    margin-top: 15px;
+    border: 1px solid #e9ecef;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 20px;
+}
+
+.bot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+/* --- Metric Boxes (Home Page) --- */
+.metric-box {
+    padding: 25px;
+}
+
+.metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.metric-header h3 {
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+}
+
+.metric-count {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* --- Bot Cards --- */
+.bot-card {
+    padding: 15px;
+    border-radius: var(--border-radius);
+    border-left: 5px solid;
+    transition: border-left 0.3s, background-color 0.3s;
+    background-color: #f8f9fa;
+}
+
+.bot-card.clickable:hover {
+    cursor: pointer;
+    background-color: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.bot-card.active {
+    border-left-color: var(--active-color);
+}
+
+.bot-card.inactive {
+    border-left-color: var(--inactive-color);
+}
+
+.bot-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+    display: inline-block;
+}
+
+.bot-card.active .status-indicator {
+    background-color: var(--active-color);
+}
+
+.bot-card.inactive .status-indicator {
+    background-color: var(--inactive-color);
+}
+
+.bot-name {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+.bot-info {
+    font-size: 0.85rem;
+    margin: 3px 0;
+    color: var(--secondary-color);
+}
+
+/* Fix dark theme select option visibility (already good) */
+select option {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+
+/* --- Organization Cards (Bot Control) --- */
+.organization-list {
+    margin-bottom: 30px;
+}
+
+.org-card {
+    border: 1px solid #ced4da;
+    text-align: center;
+    padding: 25px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.org-card:hover {
+    background-color: #e9ecef;
+    border-color: var(--primary-color);
+}
+
+.org-card.selected {
+    border: 2px solid var(--primary-color);
+    background-color: #e9f5ff;
+}
+
+/* --- Bot Detail View --- */
+.bot-detail-view {
+    margin-top: 30px;
+}
+
+.bot-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.bot-metadata p {
+    margin: 5px 0;
+    font-size: 0.9rem;
+}
+
+.bot-logs-container {
+    margin-top: 20px;
+}
+
+.logs-console {
+    background-color: var(--console-bg);
+    color: var(--console-text);
+    padding: 15px;
+    border-radius: 4px;
+    max-height: 400px;
+    overflow-y: auto;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.log-message {
+    margin: 2px 0;
+}
+
+.log-message.ERROR {
+    color: var(--inactive-color);
+    font-weight: bold;
+}
+
+.log-message.WARNING {
+    color: var(--warning-color);
+}
+
+.log-message.INFO {
+    color: var(--info-color);
+}
+
+.log-message.SUCCESS {
+    color: var(--active-color);
+    font-weight: bold;
+}
+
+
+/* --- Launchpad Controls --- */
+.launchpad-controls {
+    max-width: 500px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.launchpad-controls h2 {
+    margin-bottom: 20px;
+    color: var(--primary-color);
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.inline-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.dropdown-select {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    appearance: none; /* Remove default styling */
+    background-color: rgb(255, 255, 255);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    color: var(--text-color); /* Ensure text is dark */
+}
+
+.dropdown-select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+/* --- Buttons and Utility --- */
+.btn-primary, .btn-secondary {
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    font-weight: 600;
+    transition: opacity 0.2s, background-color 0.2s;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    margin-top: 15px;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.btn-primary:disabled {
+    background-color: #a0c3e7;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: white;
+    margin-bottom: 10px;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.message-box {
+    padding: 15px;
+    border-radius: var(--border-radius);
+    margin-top: 20px;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid transparent;
+}
+
+.message-box.success {
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.message-box.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+.hidden {
+    display: none !important;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background-color: #e9ecef;
+    margin: 30px 0;
+}
+
+/* Ensure select options look good in light theme */
+select option {
+    color: black !important;
+    background: white !important;
+}
+
+/* --- Responsiveness (Basic) --- */
+@media (max-width: 992px) {
+    .sidebar {
+        width: 200px;
+    }
+
+    .main-content {
+        margin-left: 200px; 
+        padding: 20px;
+    }
+    
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+}

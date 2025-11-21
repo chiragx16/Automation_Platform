@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Bot Launchpad{% endblock %}
+{% block heading %}Bot Launchpad{% endblock %}
+
+{% block content %}
+
+<!-- <h2 class="text-2xl font-semibold mb-6 text-gray-800">Manual Bot Execution</h2> -->
+
+<div class="max-w-full">
+    <div id="launchpadContainer" class="space-y-4">
+        {% for org in org_data %}
+        <div class="org-accordion bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden"
+            data-org-id="{{ org.id }}" data-org-name="{{ org.name }}">
+
+            <div id="orgHeader-{{ org.id }}"
+                class="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition border-b border-gray-200">
+                <h3 class="text-xl font-semibold text-gray-800">{{ org.name }} ({{ org.bots | length }} bots)</h3>
+                <svg class="h-5 w-5 text-gray-500 transform transition-transform" xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" />
+                </svg>
+            </div>
+
+            <div id="botContent-{{ org.id }}" class="bot-content p-4 space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% if org.bots %}
+                    {% for bot in org.bots %}
+                    {# Define classes based on status for the rectangular box #}
+                    {% set status_class = 'border-l-emerald-600 bg-emerald-50 text-gray-800 hover:bg-emerald-100' if
+                    bot.status == 1 else 'border-l-red-600 bg-red-50 text-gray-800 hover:bg-red-100' %}
+                    {% set disabled_class = 'inactive-bot' if bot.status == 0 else '' %}
+
+                    <div class="bot-item p-4 border-l-4 rounded-lg transition shadow-sm hover:shadow-md {{ status_class }} {{ disabled_class }}"
+                        data-bot-id="{{ bot.id }}" data-org-name="{{ org.name }}" data-bot-name="{{ bot.name }}"
+                        data-last-run="{{ bot.last_run or 'N/A' }}">
+
+                        <h4 class="font-bold text-base">{{ bot.name }}</h4>
+                        <p class="text-xs mt-1">Status: {{ 'Active' if bot.status == 1 else 'Inactive' }}</p>
+                        <p class="text-xs mt-1 text-gray-600">Last Run: {{ bot.last_run or 'Never' }}</p>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-gray-500 text-sm italic col-span-full">No bots deployed for this organization.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<form id="botDetailsForm" method="POST" action="/api/launchpad/bot-details">
+    <input type="hidden" name="bot_id" id="botIdInput">
+</form>
+
+<style>
+.inactive-bot {
+    pointer-events: none;      /* disables clicking */
+    opacity: 0.8;              /* makes it look disabled */
+    cursor: not-allowed !important;
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/launchpad.js') }}"></script>
+{% endblock %}

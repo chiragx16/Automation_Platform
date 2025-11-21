@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Bot Control{% endblock %}
+{% block heading %}Bot Control & Monitoring{% endblock %}
+
+{% block content %}
+
+<a href="{{ url_for('api.bot_control_api.bot_control') }}" class="text-blue-600 flex items-center gap-1 mb-6">
+    ← Back to Organizations
+</a>
+
+<h2 class="text-xl font-semibold mb-6">{{ org.organization_name }} Bots</h2>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    {% for item in bots %}
+    <div
+        class="bot-card bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg transition cursor-pointer"
+        data-bot-id="{{ item.bot.bot_id }}"
+    >
+        <h3 class="font-semibold text-gray-800 text-lg">{{ item.bot.bot_name }}</h3>
+
+        <!-- <p class="text-gray-500 text-sm mt-1">ID: {{ item.bot.bot_id }}</p> -->
+
+        {% if item.bot.is_active == 1 %}
+            <span class="inline-block mt-3 px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                Active
+            </span>
+        {% else %}
+            <span class="inline-block mt-3 px-3 py-1 bg-red-100 text-red-700 text-xs rounded-full">
+                Inactive
+            </span>
+        {% endif %}
+
+        <p class="text-gray-500 text-sm mt-3">
+            Last Run: {{ item.last_execution.completed_at or item.last_execution.started_at or 'Never' }}
+        </p>
+    </div>
+    {% endfor %}
+
+</div>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+{% endblock %}

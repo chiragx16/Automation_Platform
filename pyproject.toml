@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "automation-platform"
+version = "0.1.0"
+description = ""
+authors = ["Chirag Modi <chiragmodi1611@gmail.com>"]
+readme = "README.md"
+packages = [
+    { include = "automation_platform", from = "src" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.13,<4.0"
+flask = "^3.1.2"
+pydantic-settings = "^2.12.0"
+flask-cors = "^6.0.1"
+sqlalchemy = "^2.0.44"
+pymysql = "^1.1.2"
+msal = "^1.34.0"
+flask-sqlalchemy = "^3.1.1"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

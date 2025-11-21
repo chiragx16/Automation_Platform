@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{{ page_title or "BotOps" }}{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    // Tailwind config for light theme
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca'
+            }
+          },
+          // Removed glass shadows and blur for light theme
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom CSS removed dark background gradient for clean light theme */
+    html,
+    body {
+      height: 100%;
+    }
+
+    /* The body background is now handled by Tailwind classes below */
+
+    /* Hide scrollbar but allow scrolling */
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+      /* Chrome, Safari, Opera */
+    }
+
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      /* IE and Edge */
+      scrollbar-width: none;
+      /* Firefox */
+    }
+
+    ::selection {
+      /* Hex: #B4D5FE | RGB: 180, 213, 254 | Alpha: 0.4 */
+      background-color: rgba(180, 213, 254, 0.4);
+    }
+  </style>  
+</head>
+
+<body class="bg-gray-100 text-gray-900">
+
+  <div class="flex min-h-screen">
+    <aside
+      class="sticky top-0 h-screen hidden md:flex md:w-64 lg:w-72 flex-col border-r border-gray-200 bg-white shadow-lg">
+      <div class="px-6 py-5 flex items-center gap-3 border-b border-gray-200">
+        <div class="h-10 w-10 rounded-xl bg-brand-600 flex items-center justify-center shadow-md text-white">🤖</div>
+        <div>
+          <div class="text-lg font-semibold text-gray-800">Bot Manager</div>
+          <div class="text-xs text-gray-500">Operate • Monitor • Launch</div>
+        </div>
+      </div>
+      <nav class="flex-1 p-3 space-y-2">
+        <a href="{{ url_for('api.home_api.home') }}"
+          class="group flex items-center gap-3 px-3 py-2 rounded-xl text-gray-600 hover:bg-brand-50 hover:text-brand-700 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-brand-700" viewBox="0 0 24 24"
+            fill="currentColor">
+            <path d="M12 3l9 8h-3v8h-5v-5H11v5H6v-8H3z" />
+          </svg>
+          <span class="font-medium">Home</span>
+        </a>
+        <a href="{{ url_for('api.bot_control_api.bot_control') }}"
+          class="group flex items-center gap-3 px-3 py-2 rounded-xl text-gray-600 hover:bg-brand-50 hover:text-brand-700 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-brand-700" viewBox="0 0 24 24"
+            fill="currentColor">
+            <path d="M4 5h16v2H4zm0 6h10v2H4zm0 6h16v2H4z" />
+          </svg>
+          <span class="font-medium">Bot Control</span>
+        </a>
+        <a href="{{ url_for('api.launchpad_api.launchpad') }}"
+          class="group flex items-center gap-3 px-3 py-2 rounded-xl text-gray-600 hover:bg-brand-50 hover:text-brand-700 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-brand-700" viewBox="0 0 24 24"
+            fill="currentColor">
+            <path d="M5 3h14v4H5zm0 6h9v12H5zM16 9h3v12h-3z" />
+          </svg>
+          <span class="font-medium">Launchpad</span>
+        </a>
+      </nav>
+
+      <div class="p-3">
+        <a href="{{ url_for('auth.logout') }}"
+          class="group flex items-center gap-3 px-3 py-2 rounded-xl text-gray-600 hover:bg-red-50 hover:text-red-600 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-red-600" viewBox="0 0 24 24"
+            fill="currentColor">
+            <path d="M16 13v-2H7V7l-5 5 5 5v-4zM20 3h-8v2h8v14h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
+          </svg>
+          <span class="font-medium">Logout</span>
+        </a>
+      </div>
+
+      <div class="p-4 border-t border-gray-200">
+        <div class="text-xs text-gray-500">© {{ 2025 }} VCERP Consulting Pvt. Ltd</div>
+      </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col">
+      <header class="sticky top-0 z-40 border-b border-gray-200 bg-white shadow-sm">
+        <div class="px-4 md:px-6 h-14 flex items-center justify-between">
+          <button id="mobileMenuBtn"
+            class="md:hidden inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
+            </svg>
+            <span class="text-sm">Menu</span>
+          </button>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-semibold text-gray-900">{% block heading %}{{ page_title or "Dashboard" }}{%
+              endblock %}</h1>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="px-4 py-1.5 text-xs rounded-lg bg-gray-100 text-black-600">
+              {{ session.user.name if session.user else "Guest" }}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="p-4 md:p-6 lg:p-8">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <div id="mobileDrawer" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="absolute left-0 top-0 bottom-0 w-72 bg-white text-gray-900 p-4 shadow-xl">
+      <div class="flex items-center justify-between mb-4">
+        <div class="font-semibold">Bot Manager</div>
+        <button id="mobileClose" class="p-2 rounded hover:bg-gray-100 text-gray-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6.4 5l12.2 12.2-1.4 1.4L5 6.4z" />
+            <path d="M18.6 5L5 18.6l1.4 1.4L20 6.4z" />
+          </svg>
+        </button>
+      </div>
+      <nav class="space-y-2">
+        <a href="{{ url_for('api.home_api.home') }}"
+          class="block px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700">Home</a>
+        <a href="{{ url_for('api.bot_control_api.bot_control') }}"
+          class="block px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700">Bot Control</a>
+        <a href="{{ url_for('api.launchpad_api.launchpad') }}"
+          class="block px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700">Launchpad</a>
+      </nav>
+    </div>
+  </div>
+
+  {% block scripts %}{% endblock %}
+  <script>
+    const drawer = document.getElementById('mobileDrawer');
+    const btn = document.getElementById('mobileMenuBtn');
+    const closeBtn = document.getElementById('mobileClose');
+    if (btn) btn.addEventListener('click', () => drawer.classList.remove('hidden'));
+    if (closeBtn) closeBtn.addEventListener('click', () => drawer.classList.add('hidden'));
+  </script>
+</body>
+
+</html>

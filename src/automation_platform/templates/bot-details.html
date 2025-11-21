@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Bot Details{% endblock %}
+{% block heading %}Bot Execution Details{% endblock %}
+
+{% block content %}
+<div class="mx-auto bg-white shadow-xl border border-gray-200 rounded-2xl p-6">
+    <a href="{{ url_for('api.launchpad_api.launchpad') }}" class="text-blue-600 flex items-center gap-1 mb-6">
+        &larr; Back to Launchpad
+    </a>
+
+    <!-- <h3 class="text-2xl font-semibold mb-6 text-gray-800 border-b border-gray-200 pb-2">{{ bot_name }}</h3> -->
+    
+    <div class="grid grid-cols-3 max-w-full text-gray-700 max-w-[700px]">
+        <div>
+            <p class="text-sm font-medium text-gray-500">Bot Name</p>
+            <p id="detailBotName" class="font-semibold text-lg">{{ bot_name }}</p>
+        </div>
+
+        <div>
+            <p class="text-sm font-medium text-gray-500">Organization</p>
+            <p id="detailOrgName" class="font-semibold text-lg">{{ org_name }}</p>
+        </div>
+
+        <div>
+            <p class="text-sm font-medium text-gray-500">Category</p>
+            <p id="detailCategory" class="font-semibold text-lg">{{ category_name }}</p>
+        </div>
+    </div>
+
+    <!-- Schedule Time -->
+    <div class="mt-6">
+        <p class="text-sm font-medium text-gray-500 mb-1">Schedule Time</p>
+        <input 
+            id="scheduleTime"
+            type="datetime-local"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-brand-600 focus:border-brand-600"
+        >
+    </div>
+
+    <!-- Schedule Options -->
+    <div class="mt-4">
+        <p class="text-sm font-medium text-gray-500 mb-1">Schedule Option</p>
+        <select 
+            id="scheduleOption"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-brand-600 focus:border-brand-600"
+        >
+            <option value="once" selected>Run Once</option>
+            <option value="15m">Every 15 Minutes</option>
+            <option value="30m">Every 30 Minutes</option>
+            <option value="1h">Every 1 Hour</option>
+            <option value="daily">Daily</option>
+        </select>
+    </div>
+    
+    <!-- Buttons -->
+    <div class="mt-6 flex gap-4">
+        <button id="runBotBtn" data-bot-id="{{ bot_id }}"
+            class="w-1/2 py-3 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold transition">
+            Run Bot
+        </button>
+
+        <button id="scheduleBtn" data-bot-id="{{ bot_id }}"
+            class="w-1/2 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition">
+            Schedule
+        </button>
+    </div>
+
+    <p id="triggerMessage" class="text-center text-sm mt-3 text-emerald-600 hidden">Bot Triggered Successfully!</p>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Client-side logic for the Run Bot button on the details page
+    const runBtn = document.getElementById('runBotBtn');
+    const botId = runBtn.getAttribute('data-bot-id');
+    const triggerMessage = document.getElementById('triggerMessage');
+
+    if (runBtn) {
+        runBtn.addEventListener("click", async () => {
+            if (!botId) return;
+
+            runBtn.disabled = true;
+            runBtn.textContent = "Triggering...";
+
+            await fetch(`/api/bots/${botId}/run`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({})
+            });
+
+            // Success feedback
+            runBtn.textContent = "Run Bot";
+            runBtn.disabled = true; 
+            triggerMessage.classList.remove('hidden');
+
+            // Wait a moment before reloading or offering a next step
+            setTimeout(() => {
+                 // For simplicity, we could refresh the page to update 'Last Run'
+                 window.location.reload(); 
+            }, 3000);
+        });
+    }
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById("scheduleTime").value = now.toISOString().slice(0, 16);
+});
+</script>
+{% endblock %}

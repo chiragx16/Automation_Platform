@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Bot Logs{% endblock %}
+{% block heading %}Bot Control & Monitoring{% endblock %}
+{% block content %}
+<div class="p-4">
+  <a href="javascript:history.back()" class="text-blue-500 hover:underline">&larr; Back to Bot List</a>
+
+  {# NEW LAYOUT: Heading and Control on the same line #}
+  <div class="flex items-center justify-between mt-4 mb-6">
+    <h2 class="text-2xl font-semibold">Bot Execution Logs</h2>
+
+    {% if session.user and session.user.is_admin == 1 %}
+    <div class="flex items-center space-x-4">
+
+      {# Change Access Button - Subtle hover effect restored #}
+      <button id="changeAccessBtn"
+        class="px-4 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition duration-150 shadow-lg flex items-center 
+                                             transform hover:-translate-y-px active:translate-y-0 active:shadow-md 
+                                             focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 15v2m-6 4h12a3 3 0 003-3v-5.586a1 1 0 00-.293-.707l-2.414-2.414A1 1 0 0015.586 7H14a1 1 0 01-1-1V4a1 1 0 00-1-1H4a1 1 0 00-1 1v16a1 1 0 001 1h8z">
+          </path>
+        </svg>
+        Change Access
+      </button>
+
+      <label class="sr-only">Bot Status Control</label>
+
+      <div class="segmented-control flex p-1 rounded-lg bg-gray-200 shadow-sm"
+        style="--active-color: #10b981; --inactive-color: #ef4444;">
+
+        <input type="radio" id="botActive" name="botStatus" value="active" class="hidden" />
+        <label for="botActive"
+          class="segment flex items-center justify-center py-2 px-4 rounded-lg cursor-pointer transition-all duration-200 text-sm font-medium text-gray-700 hover:bg-gray-200">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 22 22"
+            xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M14.752 11.168l-3.197 2.132A1 1 0 0110 13.134V9.866a1 1 0 011.555-.832l3.197 2.132a1 1 0 010 1.664z">
+            </path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Activate
+        </label>
+
+        <input type="radio" id="botInactive" name="botStatus" value="inactive" class="hidden" />
+        <label for="botInactive"
+          class="segment flex items-center justify-center py-2 px-4 rounded-lg cursor-pointer transition-all duration-300 text-sm font-medium text-gray-700 hover:bg-gray-200">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 22 22"
+            xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Deactivate
+        </label>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {# END NEW LAYOUT #}
+  <div id="botLogs"
+    class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-[450px] overflow-x-auto overflow-y-auto whitespace-pre max-w-[900px] hide-scrollbar shadow-inner">
+    Loading logs...
+  </div>
+</div>
+
+{# --- START ACCESS CONTROL MODAL --- #}
+<div id="accessModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center">
+  <div
+    class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all duration-300 scale-95 opacity-0"
+    id="modalContent">
+    <h3 class="text-xl font-bold text-gray-800 border-b pb-3 mb-4">Manage Bot Access</h3>
+
+    <form id="accessForm">
+      <div class="space-y-4">
+
+        {# Organization Dropdown - RESTORED #}
+        <div>
+          <label for="organizationSelect" class="block text-sm font-medium text-gray-700 mb-1">Select
+            Organization</label>
+          <select id="organizationSelect"
+            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg shadow-sm text-gray-900 font-medium">
+            <option value="" disabled selected>Choose an organization</option>
+            {# Options will be populated by JavaScript #}
+            <option value="org1">Organization A</option>
+            <option value="org2">Organization B</option>
+          </select>
+        </div>
+
+        {# User Dropdown - RESTORED #}
+        <div>
+          <label for="userSelect" class="block text-sm font-medium text-gray-700 mb-1">Select User</label>
+          <select id="userSelect"
+            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg shadow-sm text-gray-900 font-medium">
+            <option value="" disabled selected>Choose a user</option>
+            {# Options will be populated by JavaScript (likely dependent on Organization) #}
+            <option value="user1">User One</option>
+            <option value="user2">User Two</option>
+          </select>
+        </div>
+      </div>
+
+      {# Action Buttons #}
+      <div class="mt-6 flex justify-end space-x-3">
+        <button type="button" id="cancelAccessBtn"
+          class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-150">
+          Cancel
+        </button>
+
+        {# Submit button using Tailwind's disabled variant #}
+        <button type="submit" id="allowAccessBtn"
+          class="px-4 py-2 text-sm font-medium text-white rounded-lg transition duration-150 shadow-md 
+                                            bg-purple-600 disabled:bg-purple-400 disabled:cursor-not-allowed disabled:shadow-none" disabled>
+          Allow Access
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{# --- END ACCESS CONTROL MODAL --- #}
+
+<style>
+  /* Base styles for the control, using CSS variables for active colors */
+  /* (Existing style block content remains unchanged) */
+  .segmented-control {
+    border: 1px solid #d1d5db;
+    /* A slightly darker gray border for definition */
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    /* Subtle shadow for depth */
+  }
+
+  /* Style for the active segment */
+  input[type="radio"]:checked+.segment {
+    background-color: var(--active-color);
+    color: white;
+    box-shadow: 0 2px 5px -1px rgba(0, 0, 0, 0.1), 0 1px 3px -1px rgba(0, 0, 0, 0.07);
+    /* More pronounced shadow */
+    position: relative;
+    /* For z-index if needed */
+    z-index: 1;
+    /* Make active segment appear slightly above */
+  }
+
+  /* Specific colors for "Activate" */
+  #botActive:checked+.segment {
+    background-color: #10b981;
+    /* Tailwind's emerald-500 equivalent */
+  }
+
+  /* Specific colors for "Deactivate" */
+  #botInactive:checked+.segment {
+    background-color: #ef4444;
+    /* Tailwind's red-500 equivalent */
+  }
+
+  /* Style for non-active segment's text */
+  input[type="radio"]:not(:checked)+.segment {
+    color: #4b5563;
+    /* Gray-700 for inactive text */
+  }
+
+  /* Log container refinement */
+  #botLogs {
+    white-space: pre;
+    /* Ensure logs format correctly */
+    line-height: 1.4;
+  }
+</style>
+<script>
+  const BOT_ID = "{{ bot_id }}";
+</script>
+<script src="{{ url_for('static', filename='js/bot_logs.js') }}"></script>
+{% endblock %}

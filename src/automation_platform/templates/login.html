@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #eef1f7, #dfe7f5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(14px);
+      padding: 42px 38px;
+      width: 420px;
+      border-radius: 20px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      animation: fadeIn 0.5s ease;
+      transition: all 0.3s ease-in-out;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 28px;
+      color: #2d3748;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: block;
+      color: #4a5568;
+    }
+
+    select,
+    input {
+      width: 100%;
+      padding: 14px 15px;
+      border-radius: 12px;
+      border: 1px solid #d4d8e5;
+      font-size: 15px;
+      background: #f9fafb;
+      transition: 0.25s ease;
+    }
+
+    select:focus,
+    input:focus {
+      border-color: #5c6bf0;
+      box-shadow: 0 0 0 4px rgba(92, 107, 240, 0.25);
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      background: linear-gradient(120deg, #6366f1, #4c52ee);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: 0.2s ease-in-out;
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(92, 107, 240, 0.4);
+    }
+
+    .divider {
+      text-align: center;
+      margin: 26px 0;
+      color: #6b7280;
+      position: relative;
+      font-size: 14px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 38%;
+      height: 1px;
+      background: #cbd5e1;
+    }
+
+    .divider::before {
+      left: 0;
+    }
+
+    .divider::after {
+      right: 0;
+    }
+
+    .oauth-btn img {
+      width: 100%;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.25s ease;
+      border: 1px solid #d8dff2;
+    }
+
+    .oauth-btn img:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+    }
+
+    .ms-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      border: 1px solid #d1d5db;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #ffffff;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .ms-btn img {
+      width: 24px;
+      height: 24px;
+    }
+
+    .ms-btn span {
+      font-size: 15px;
+      font-weight: 500;
+      color: #3b4048;
+    }
+
+    .ms-btn:hover {
+      background: #f5f6fa;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
+    }
+
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Step 1 -->
+  <div class="card" id="step1">
+    <h1>Select Organization</h1>
+    <form id="orgStepForm">
+      <label>Organization</label>
+      <select name="org" id="orgSelectStep1" required>
+        <option value="" disabled selected>Loading organizations...</option>
+      </select>
+      <button type="submit">Continue</button>
+    </form>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="card" id="step2" style="display:none;">
+    <h1>Login</h1>
+
+    <form id="localLoginForm" action="/login/local" method="POST">
+      <input type="hidden" name="organization_id" id="selectedOrgHidden">
+
+      <label>Email</label>
+      <input type="email" name="email" required placeholder="Enter your email" />
+
+      <label>Password</label>
+      <input type="password" name="password" required placeholder="Enter password" />
+
+      <button type="submit">Login</button>
+    </form>
+
+    <div class="divider">or</div>
+
+    <form id="msLoginForm" action="/login/microsoft" method="POST">
+      <input type="hidden" name="organization_id" id="selectedOrgHiddenMS">
+
+      <a id="msLoginBtn" class="ms-btn">
+        <img src="static/assests/Microsoft_Logo_32px.png" alt="Microsoft Logo" />
+        <span>Sign in with Microsoft</span>
+      </a>
+    </form>
+
+  </div>
+
+  <script>
+    let selectedOrg = null;
+
+    async function loadOrganizations() {
+      const response = await fetch("/login_orgs");
+      const organizations = await response.json();
+      const step1Select = document.getElementById("orgSelectStep1");
+      step1Select.innerHTML = '<option value="" disabled selected>Select organization</option>';
+
+      organizations.forEach(org => {
+        const opt = document.createElement("option");
+        opt.value = org.organization_id;
+        opt.textContent = org.organization_name;
+        step1Select.appendChild(opt);
+      });
+    }
+    loadOrganizations();
+
+    document.getElementById('orgStepForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      selectedOrg = document.getElementById('orgSelectStep1').value;
+
+      if (!selectedOrg) return alert("Please select an organization.");
+
+      document.getElementById('selectedOrgHidden').value = selectedOrg;
+      document.getElementById('selectedOrgHiddenMS').value = selectedOrg;
+
+      document.getElementById('step1').style.display = 'none';
+      document.getElementById('step2').style.display = 'block';
+    });
+
+    document.getElementById('msLoginBtn').addEventListener('click', () => {
+      if (!selectedOrg) return alert("Select an organization first.");
+      document.getElementById('msLoginForm').submit();
+    });
+  </script>
+
+</body>
+
+</html>

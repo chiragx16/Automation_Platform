@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block heading %}Home{% endblock %}
+{% block content %}
+  <section id="kpis" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="rounded-2xl p-5 bg-white shadow-lg border border-gray-200">
+      <div class="text-sm text-gray-500">Total Bots</div>
+      <div id="kpi-total" class="text-3xl font-bold mt-1">—</div>
+      <div class="mt-3 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+        <div id="kpi-total-bar" class="h-full w-0 bg-brand-600 transition-all"></div>
+      </div>
+    </div>
+    <div class="rounded-2xl p-5 bg-white shadow-lg border border-gray-200">
+      <div class="text-sm text-gray-500">Active Bots</div>
+      <div id="kpi-active" class="text-3xl font-bold mt-1">—</div>
+      <div class="mt-3 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+        <div id="kpi-active-bar" class="h-full w-0 bg-emerald-500 transition-all"></div>
+      </div>
+    </div>
+    <div class="rounded-2xl p-5 bg-white shadow-lg border border-gray-200">
+      <div class="text-sm text-gray-500">Users</div>
+      <div id="kpi-users" class="text-3xl font-bold mt-1">—</div>
+      <div class="mt-3 text-xs text-gray-500">Connected experience</div>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="rounded-2xl bg-white shadow-sm border border-gray-200 p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-semibold">Active Bots</h3>
+        <a href="{{ url_for('api.bot_control_api.bot_control') }}" class="text-sm text-brand-600 hover:underline">View all</a>
+      </div>
+      <div id="active-list" class="space-y-3"></div>
+    </div>
+    <div class="rounded-2xl bg-white shadow-sm border border-gray-200 p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-semibold">Recent Runs</h3>
+        <a href="{{ url_for('api.launchpad_api.launchpad') }}" class="text-sm text-brand-600 hover:underline">Launchpad</a>
+      </div>
+      <div id="recent-list" class="space-y-3"></div>
+    </div>
+  </section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/home.js') }}"></script>
+{% endblock %}
