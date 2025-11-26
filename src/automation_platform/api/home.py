@@ -26,3 +26,24 @@ def api_stats():
         "active_bots": active_bots,
         "total_users": total_users
     })
+
+
+@home_api.route("/latest_executions", methods=["GET"])
+@login_required
+def get_last_5_executions():
+    executions = (
+        BotExecution.query
+        .order_by(BotExecution.created_at.desc())
+        .limit(5)
+        .all()
+    )
+
+    response = []
+    for exe in executions:
+        response.append({
+            "bot_name": exe.bot.bot_name if exe.bot else None,
+            "status": exe.status.value,
+            "completed_at": str(exe.completed_at) if exe.completed_at else None
+        })
+
+    return jsonify(response)

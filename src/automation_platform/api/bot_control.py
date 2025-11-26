@@ -186,7 +186,8 @@ def get_bot_logs():
     return jsonify({
         "bot_id": bot_id,
         "logs": content,
-        "is_active": bot.is_active   # <-- return active status
+        "is_active": bot.is_active,
+        "bot_custom_url": bot.bot_custom_url if bot.bot_custom_url else None
     })
 
 
@@ -225,7 +226,7 @@ def set_bot_status():
 
 # --- API Route 1: Fetch all active Organizations ---
 @bot_control_api.route('/organizations', methods=['GET'])
-# @admin_required # Uncomment if needed
+@login_required
 def get_model_organizations():
     # 1. Get bot_id from query parameters
     bot_id = request.args.get('bot_id', type=int)
@@ -258,7 +259,7 @@ def get_model_organizations():
 
 # --- API Route 2: Fetch active Users based on Organization ID ---
 @bot_control_api.route('/users', methods=['POST'])
-# @admin_required # Uncomment if needed
+@login_required
 def get_users_by_organization():
     data = request.get_json()
     org_id = data.get('organization_id')
@@ -284,3 +285,100 @@ def get_users_by_organization():
     except Exception as e:
         print(f"Error fetching users: {e}")
         return jsonify({"error": "Failed to load users for the organization."}), 500
+
+
+@bot_control_api.route("/check-permission", methods=["POST"])
+@login_required
+def check_permission():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    bot_id = data.get('bot_id')
+
+    assignment = BotAssignment.query.filter_by(
+        user_id=user_id,
+        bot_id=bot_id
+    ).first()
+
+    has_permission = assignment is not None
+
+    return jsonify({
+        "user_id": user_id,
+        "bot_id": bot_id,
+        "has_permission": has_permission
+    }), 200
+
+
+@bot_control_api.route("/assign-user", methods=["POST"])
+@admin_required
+def assign_user_to_bot():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    bot_id = data.get("bot_id")
+
+    current_user_id = session.get("user", {}).get("id")
+
+    if not user_id or not bot_id:
+        return jsonify({"error": "user_id and bot_id are required"}), 400
+
+    # Check if assignment exists
+    assignment = BotAssignment.query.filter_by(
+        user_id=user_id,
+        bot_id=bot_id
+    ).first()
+
+    if assignment:
+        return jsonify({"message": "User already has access to this bot"}), 200
+
+    try:
+        new_assignment = BotAssignment(
+            user_id=user_id,
+            bot_id=bot_id,
+            assigned_by=current_user_id  # admin assigning
+        )
+        db.session.add(new_assignment)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Access successfully granted",
+            "user_id": user_id,
+            "bot_id": bot_id
+        }), 200
+
+    except Exception as e:
+        print(e)
+        db.session.rollback()
+        return jsonify({"error": "Failed to assign user", "details": str(e)}), 500
+    
+
+@bot_control_api.route("/remove-user", methods=["POST"])
+@admin_required
+def remove_user_from_bot():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    bot_id = data.get("bot_id")
+
+    if not user_id or not bot_id:
+        return jsonify({"error": "user_id and bot_id are required"}), 400
+
+    # Check if assignment exists
+    assignment = BotAssignment.query.filter_by(
+        user_id=user_id,
+        bot_id=bot_id
+    ).first()
+
+    if not assignment:
+        return jsonify({"message": "User does not have access to this bot"}), 200
+
+    try:
+        db.session.delete(assignment)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Access successfully removed",
+            "user_id": user_id,
+            "bot_id": bot_id
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Failed to remove access", "details": str(e)}), 500

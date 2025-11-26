@@ -1,4 +1,7 @@
-# app.py
+"""
+app.py - Flask application with APScheduler integration
+"""
+
 from flask import Flask, session, redirect, url_for, jsonify
 from flask_cors import CORS
 from automation_platform.settings import settings
@@ -6,7 +9,14 @@ from automation_platform.database.database import init_db
 from automation_platform.auth.routes import auth_bp
 from automation_platform.api import api
 from datetime import timedelta
+from automation_platform.scheduler.scheduler import scheduler_service
+import logging
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 def create_app():
     app = Flask(
@@ -24,7 +34,10 @@ def create_app():
     # --- Extensions init ---
     CORS(app)
     init_db(app)
-
+    
+    # Initialize scheduler
+    scheduler_service.init_app(app)
+    
     # --- Register Blueprints ---
     app.register_blueprint(api)
     app.register_blueprint(auth_bp)

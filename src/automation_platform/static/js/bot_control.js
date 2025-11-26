@@ -4,8 +4,6 @@ async function loadOrganizations() {
     const res = await fetch("/api/botcontrol/bot-control-orgs");
     const orgs = await res.json();
 
-    console.log(orgs);
-
     const orgContainer = document.getElementById("orgContainer");
     orgContainer.innerHTML = "";
 
@@ -28,10 +26,6 @@ async function loadOrganizations() {
                 </svg>
             </div>
         `;
-
-        // card.onclick = () => {
-        //     window.location.href = `/bot-control?org=${org.id}`;
-        // };
 
         card.onclick = async () => {
             const res = await fetch("/api/botcontrol/bot-control", {

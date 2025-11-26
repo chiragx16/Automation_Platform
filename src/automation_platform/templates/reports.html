@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block title %}Bot Execution Reports{% endblock %}
+{% block heading %}Bot Execution Reports{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+        <h2 class="text-2xl font-bold text-gray-800">Bot Execution History</h2>
+        <div class="mt-4 md:mt-0 flex items-center space-x-3">
+            <input type="text" id="searchInput"
+                class="px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-brand-500 focus:border-brand-500 text-sm w-full md:w-64"
+                placeholder="Search bot or user...">
+            
+            <input type="date" id="dateFilter" 
+                class="px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-brand-500 focus:border-brand-500 text-sm">
+            
+            <select id="statusFilter"
+                class="px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-brand-500 focus:border-brand-500 text-sm">
+                <option value="">All Statuses</option>
+                <option value="SUCCESS">Success</option>
+                <option value="FAILED">Failed</option>
+                <option value="RUNNING">Running</option>
+                <option value="PENDING">Pending</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-indigo-100">
+                <tr>
+                    <th id="header-id"
+                        class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider cursor-pointer select-none"
+                        data-sort="execution_id">
+                        ID
+                        <!-- <span class="sort-icon inline-block ml-1"></span> -->
+                    </th>
+                    <th id="header-bot"
+                        class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider cursor-pointer select-none"
+                        data-sort="bot_name">
+                        Bot Name
+                        <span class="sort-icon inline-block ml-1"></span>
+                    </th>
+                    <th id="header-status"
+                        class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">
+                        Status
+                    </th>
+                    <th id="header-user"
+                        class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider cursor-pointer select-none"
+                        data-sort="triggered_by_user">
+                        Triggered By
+                        <span class="sort-icon inline-block ml-1"></span>
+                    </th>
+                    <th id="header-start"
+                        class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider cursor-pointer select-none"
+                        data-sort="started_date">
+                        Started at
+                        <span class="sort-icon inline-block ml-1"></span>
+                    </th>
+                    <th id="header-end"
+                        class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider cursor-pointer select-none"
+                        data-sort="completed_date">
+                        Completed at
+                        <span class="sort-icon inline-block ml-1"></span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="dataTableBody" class="bg-white divide-y divide-gray-200">
+            </tbody>
+        </table>
+
+        <div id="noResults" class="text-center py-12 text-gray-600 text-lg hidden">
+            No executions found matching your criteria.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Variable to hold the fetched data globally
+    let allExecutionData = [];
+
+    // Utility function to get the combined date/time string for sorting
+    function getDateTime(item, type) {
+        // Use property access for robustness
+        const date = item[type + '_date'] || '0000-01-01';
+        const time = item[type + '_time'] || '00:00:00';
+        // Use 'z' for N/A or null dates to push them to the bottom (end) in descending sort,
+        // which places completed items first.
+        if (date === '0000-01-01' || date === '') return 'z';
+        return `${date} ${time}`;
+    }
+
+    let sortColumn = null;
+    let sortDirection = 1; // 1 for ascending, -1 for descending
+
+    function renderTable(filteredData) {
+        const tbody = document.getElementById('dataTableBody');
+        tbody.innerHTML = '';
+        const noResults = document.getElementById('noResults');
+
+        if (filteredData.length === 0) {
+            noResults.classList.remove('hidden');
+            return;
+        } else {
+            noResults.classList.add('hidden');
+        }
+
+        filteredData.forEach(execution => {
+            const row = tbody.insertRow();
+            row.className = 'hover:bg-gray-50';
+            row.setAttribute('data-status', execution.status);
+
+            // Status Badge Logic 
+            let statusClasses = '';
+            if (execution.status === 'SUCCESS') {
+                statusClasses = 'bg-green-100 text-green-800';
+            } else if (execution.status === 'FAILED') {
+                statusClasses = 'bg-red-100 text-red-800';
+            } else if (execution.status === 'RUNNING') {
+                statusClasses = 'bg-blue-100 text-blue-800 animate-pulse';
+            } else {
+                statusClasses = 'bg-yellow-100 text-yellow-800';
+            }
+
+            const startDate = execution.started_date || 'N/A';
+            // Note: The API should ensure the time is split correctly, but we handle missing data gracefully.
+            const startTime = execution.started_time ? `<span class="text-gray-400">@</span> ${execution.started_time}` : '';
+
+            const completedDate = execution.completed_date || 'N/A';
+            const completedTime = execution.completed_time ? `<span class="text-gray-400">@</span> ${execution.completed_time}` : '';
+
+
+            row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900">${execution.execution_id}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">${execution.bot_name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-center">
+                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClasses}">
+                        ${execution.status}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">${execution.triggered_by_user}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">${startDate} ${startTime}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">${completedDate} ${completedTime}</td>
+            `;
+        });
+    }
+
+    function sortData(column) {
+        if (sortColumn === column) {
+            sortDirection *= -1; // Toggle direction
+        } else {
+            sortColumn = column;
+            sortDirection = 1; // Default to ascending for new column
+        }
+
+        applyFiltersAndSort(allExecutionData);
+    }
+
+    function updateSortIcons() {
+        document.querySelectorAll('.sort-icon').forEach(icon => icon.textContent = '');
+        if (sortColumn) {
+            let headerIdBase = sortColumn.replace('_date', '').replace('_name', '').replace('_by_user', '');
+            if (sortColumn === 'execution_id') headerIdBase = 'id';
+
+            const header = document.getElementById(`header-${headerIdBase}`);
+            if (header) {
+                const icon = header.querySelector('.sort-icon');
+                // Use the correct date header ID: 'header-end' for completed_date
+                if (headerIdBase === 'end' || headerIdBase === 'start' || headerIdBase === 'id') {
+                    icon.textContent = sortDirection === -1 ? '▼' : '▲';
+                } else {
+                    icon.textContent = sortDirection === 1 ? '▲' : '▼';
+                }
+            }
+        }
+    }
+
+    function applyFiltersAndSort(sourceData) {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const statusTerm = document.getElementById('statusFilter').value;
+        const dateTerm = document.getElementById('dateFilter').value; // Date is currently set to filter by started_date
+
+        let filtered = sourceData.filter(execution => {
+            // Search filter
+            const matchesSearch = searchTerm === '' ||
+                execution.bot_name.toLowerCase().includes(searchTerm) ||
+                execution.triggered_by_user.toLowerCase().includes(searchTerm);
+
+            // Status filter
+            const matchesStatus = statusTerm === '' || execution.status === statusTerm;
+            
+            // Date filter logic: Filter by STARTED date (as requested in the last exchange)
+            const matchesDate = dateTerm === '' || execution.started_date === dateTerm;
+
+            return matchesSearch && matchesStatus && matchesDate;
+        });
+
+        // Apply sort to the filtered data
+        if (sortColumn) {
+            filtered = filtered.sort((a, b) => {
+                let valA, valB;
+                const isDateColumn = sortColumn.includes('date');
+
+                let comparisonResult = 0;
+
+                if (isDateColumn) {
+                    valA = getDateTime(a, sortColumn.split('_')[0]);
+                    valB = getDateTime(b, sortColumn.split('_')[0]);
+
+                    // Custom logic for date sorting: 'z' (N/A) always goes to the end
+                    if (valA === 'z' && valB !== 'z') comparisonResult = 1;
+                    else if (valA !== 'z' && valB === 'z') comparisonResult = -1;
+                    else if (valA < valB) comparisonResult = -1;
+                    else if (valA > valB) comparisonResult = 1;
+
+                    comparisonResult *= sortDirection;
+
+                } else if (sortColumn === 'execution_id') {
+                    valA = a[sortColumn];
+                    valB = b[sortColumn];
+                    valA = typeof valA === 'number' ? valA : -Infinity;
+                    valB = typeof valB === 'number' ? valB : -Infinity;
+
+                    if (valA < valB) comparisonResult = -1;
+                    else if (valA > valB) comparisonResult = 1;
+
+                    comparisonResult *= sortDirection;
+                } else {
+                    valA = (a[sortColumn] || '').toLowerCase();
+                    valB = (b[sortColumn] || '').toLowerCase();
+
+                    if (valA < valB) comparisonResult = -1;
+                    else if (valA > valB) comparisonResult = 1;
+
+                    comparisonResult *= sortDirection;
+                }
+
+                return comparisonResult;
+            });
+        }
+
+        renderTable(filtered);
+        updateSortIcons();
+    }
+
+    // Attach event listeners to filter inputs
+    document.getElementById('searchInput').addEventListener('keyup', () => applyFiltersAndSort(allExecutionData));
+    document.getElementById('statusFilter').addEventListener('change', () => applyFiltersAndSort(allExecutionData));
+    document.getElementById('dateFilter').addEventListener('change', () => applyFiltersAndSort(allExecutionData));
+
+    // Attach sort event listeners to headers
+    document.querySelectorAll('[data-sort]').forEach(header => {
+        header.addEventListener('click', () => {
+            sortData(header.getAttribute('data-sort'));
+        });
+    });
+
+    // Initial load: Fetch data, set initial sort, and render table.
+    window.onload = () => {
+        fetch('/api/reports/bot-executions') // **UPDATE THIS PATH IF YOUR API IS DIFFERENT**
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Store the fetched data globally
+                allExecutionData = data;
+                
+                // Set initial sort to COMPLETED (DATE/TIME) in DESCENDING (-1) order.
+                sortColumn = 'completed_date';
+                sortDirection = -1; 
+                
+                // Apply filters and sort to render the table for the first time
+                applyFiltersAndSort(allExecutionData);
+            })
+            .catch(error => {
+                console.error('There was a problem fetching the data:', error);
+                document.getElementById('dataTableBody').innerHTML = `
+                    <tr><td colspan="6" class="px-6 py-4 text-center text-red-500">
+                        Error loading data. Check console for details.
+                    </td></tr>`;
+            });
+    };
+
+</script>
+{% endblock %}

@@ -112,7 +112,18 @@ class Bot(db.Model):
     category_id = Column(Integer, ForeignKey("BotCategory.category_id", ondelete="SET NULL"), nullable=True)
 
     is_active = Column(Boolean, default=True, nullable=False)
+
+    # Absolute path to bot script/executable
+    script_path = Column(Text, nullable=False)
+
+    # Path to bot’s virtual environment
+    venv_path = Column(Text, nullable=False)   
+
+    # Path to log file
     log_file_path = Column(Text, nullable=True)
+
+    # Bot custom URL
+    bot_custom_url = Column(Text, nullable=True)
 
     created_by = Column(Integer, ForeignKey("User.user_id"), nullable=False)
 
@@ -125,7 +136,7 @@ class Bot(db.Model):
 
     assignments = relationship("BotAssignment", back_populates="bot", cascade="all, delete")
     schedules = relationship("BotSchedule", back_populates="bot", cascade="all, delete")
-    executions = relationship("BotExecution", back_populates="bot", cascade="all, delete")
+    executions = relationship("BotExecution", back_populates="bot", passive_deletes=True)
 
 
 # ===========================
@@ -176,7 +187,7 @@ class BotSchedule(db.Model):
 
     bot = relationship("Bot", back_populates="schedules")
     creator = relationship("User")
-    executions = relationship("BotExecution", back_populates="schedule", cascade="all, delete")
+    executions = relationship("BotExecution", back_populates="schedule", passive_deletes=True)
 
 
 # ===========================
@@ -187,8 +198,8 @@ class BotExecution(db.Model):
 
     execution_id = Column(Integer, primary_key=True, autoincrement=True)
 
-    bot_id = Column(Integer, ForeignKey("Bot.bot_id", ondelete="CASCADE"), nullable=False)
-    schedule_id = Column(Integer, ForeignKey("BotSchedule.schedule_id", ondelete="SET NULL"))
+    bot_id = Column(Integer, ForeignKey("Bot.bot_id", ondelete="SET NULL"), nullable=True)
+    schedule_id = Column(Integer, ForeignKey("BotSchedule.schedule_id", ondelete="SET NULL"), nullable=True)
     triggered_by_user_id = Column(Integer, ForeignKey("User.user_id", ondelete="SET NULL"))
 
     status = Column(Enum(ExecutionStatus), default=ExecutionStatus.PENDING, nullable=False)

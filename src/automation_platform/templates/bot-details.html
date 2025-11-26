@@ -8,8 +8,6 @@
         &larr; Back to Launchpad
     </a>
 
-    <!-- <h3 class="text-2xl font-semibold mb-6 text-gray-800 border-b border-gray-200 pb-2">{{ bot_name }}</h3> -->
-    
     <div class="grid grid-cols-3 max-w-full text-gray-700 max-w-[700px]">
         <div>
             <p class="text-sm font-medium text-gray-500">Bot Name</p>
@@ -27,7 +25,6 @@
         </div>
     </div>
 
-    <!-- Schedule Time -->
     <div class="mt-6">
         <p class="text-sm font-medium text-gray-500 mb-1">Schedule Time</p>
         <input 
@@ -37,22 +34,21 @@
         >
     </div>
 
-    <!-- Schedule Options -->
     <div class="mt-4">
         <p class="text-sm font-medium text-gray-500 mb-1">Schedule Option</p>
         <select 
             id="scheduleOption"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-brand-600 focus:border-brand-600"
         >
-            <option value="once" selected>Run Once</option>
-            <option value="15m">Every 15 Minutes</option>
+            <option value="15m" selected>Every 15 Minutes</option>
             <option value="30m">Every 30 Minutes</option>
             <option value="1h">Every 1 Hour</option>
+            <option value="3h">Every 3 Hour</option>
+            <option value="5h">Every 5 Hour</option>
             <option value="daily">Daily</option>
         </select>
     </div>
     
-    <!-- Buttons -->
     <div class="mt-6 flex gap-4">
         <button id="runBotBtn" data-bot-id="{{ bot_id }}"
             class="w-1/2 py-3 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold transition">
@@ -66,48 +62,186 @@
     </div>
 
     <p id="triggerMessage" class="text-center text-sm mt-3 text-emerald-600 hidden">Bot Triggered Successfully!</p>
+    <p id="scheduleMessage" class="text-center text-sm mt-3 text-blue-600 hidden">Bot Scheduled Successfully!</p>
 </div>
 
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Client-side logic for the Run Bot button on the details page
+    // --- API Configuration ---
+    const SCHEDULE_API_URL = '/api/schedule/schedule_bot';
+    const RUN_API_URL_BASE = '/api/schedule/run/';
+    const INDIAN_TIMEZONE = 'Asia/Kolkata'; // Indian Standard Time (IST)
+    const DEFAULT_SCHEDULE_NAME = 'Default Schedule';
+
     const runBtn = document.getElementById('runBotBtn');
-    const botId = runBtn.getAttribute('data-bot-id');
-    const triggerMessage = document.getElementById('triggerMessage');
+    const scheduleBtn = document.getElementById('scheduleBtn');
+    const scheduleTimeInput = document.getElementById('scheduleTime');
+    const scheduleOptionSelect = document.getElementById('scheduleOption');
+    const botId = scheduleBtn.getAttribute('data-bot-id');
+
+    // Messages
+    const runMessage = document.getElementById('triggerMessage');
+    const scheduleMessage = document.getElementById('scheduleMessage');
+
+    /**
+     * Helper function to convert schedule options and time into a CRON expression.
+     * @param {string} option - The selected schedule option (e.g., 'daily', '15m').
+     * @param {string} timeValue - The datetime-local input value (e.g., "2025-11-24T16:30").
+     * @returns {string} A 5-field CRON expression.
+     */
+    function getCronExpression(option, timeValue) {
+        // Parse the time part (HH:MM) from the datetime-local string
+        const date = new Date(timeValue);
+        const minute = date.getMinutes();
+        const hour = date.getHours();
+
+        switch (option) {
+            case '15m':
+                // Every 15 minutes, runs every minute divisible by 15.
+                return `*/15 * * * *`;
+            case '30m':
+                // Every 30 minutes, runs every minute divisible by 30.
+                return `*/30 * * * *`;
+            case '1h':
+                // Every hour at the specified minute
+                return `${minute} * * * *`;
+            case '3h':
+                // Every 3 hours at the specified minute
+                return `${minute} */3 * * *`;
+            case '5h':
+                // Every 5 hours at the specified minute
+                return `${minute} */5 * * *`;
+            case 'daily':
+                // Daily at the specified hour and minute
+                return `${minute} ${hour} * * *`;
+            default:
+                // Default to daily if something goes wrong
+                return `${minute} ${hour} * * *`;
+        }
+    }
+
+
+    // --- 1. Run Bot Functionality (Previous implementation) ---
 
     if (runBtn) {
         runBtn.addEventListener("click", async () => {
             if (!botId) return;
-
+            
             runBtn.disabled = true;
             runBtn.textContent = "Triggering...";
+            runMessage.classList.add('hidden'); // Clear previous schedule message
 
-            await fetch(`/api/bots/${botId}/run`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({})
-            });
+            try {
+                const response = await fetch(`${RUN_API_URL_BASE}${botId}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({})
+                });
+                
+                console.log(response)
 
-            // Success feedback
-            runBtn.textContent = "Run Bot";
-            runBtn.disabled = true; 
-            triggerMessage.classList.remove('hidden');
+                if (!response.ok) {
+                    throw new Error('Failed to trigger bot run.');
+                }
+                
+                runBtn.textContent = "Run Bot";
+                runMessage.textContent = "Bot Triggered Successfully!";
+                runMessage.classList.remove('hidden');
 
-            // Wait a moment before reloading or offering a next step
-            setTimeout(() => {
-                 // For simplicity, we could refresh the page to update 'Last Run'
-                 window.location.reload(); 
-            }, 3000);
+                setTimeout(() => {
+                    window.location.reload(); 
+                }, 1000);
+
+            } catch (error) {
+                console.error("Error running bot:", error);
+                alert("Error: Failed to trigger bot run. Check the console for API details.");
+                
+                runBtn.textContent = "Run Bot";
+                runBtn.disabled = false;
+                runMessage.classList.add('hidden');
+            }
         });
     }
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    document.getElementById("scheduleTime").value = now.toISOString().slice(0, 16);
-});
+
+    // --- 2. Schedule Bot Functionality (New implementation) ---
+
+    if (scheduleBtn) {
+        scheduleBtn.addEventListener("click", scheduleBot);
+    }
+
+    async function scheduleBot() {
+        if (!botId) return;
+
+        scheduleBtn.disabled = true;
+        scheduleBtn.textContent = "Scheduling...";
+        scheduleMessage.classList.add('hidden'); // Clear previous success/error messages
+        runMessage.classList.add('hidden'); // Clear run message
+
+        const selectedTime = scheduleTimeInput.value;
+        const selectedOption = scheduleOptionSelect.value;
+        
+        if (!selectedTime) {
+            alert("Please select a valid time.");
+            scheduleBtn.disabled = false;
+            scheduleBtn.textContent = "Schedule";
+            return;
+        }
+
+        const cronExpression = getCronExpression(selectedOption, selectedTime);
+        console.log(`Scheduling with CRON: ${cronExpression} in ${INDIAN_TIMEZONE}`);
+
+        const payload = {
+            "bot_id": parseInt(botId),
+            "name": DEFAULT_SCHEDULE_NAME,
+            "cron_expression": cronExpression,
+            "timezone": INDIAN_TIMEZONE,
+            "is_active": true
+        };
+
+        try {
+            const response = await fetch(SCHEDULE_API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: "Failed to schedule bot" }));
+                throw new Error(`API Error: ${response.status} - ${errorData.message || 'Unknown error'}`);
+            }
+
+            // Success feedback
+            scheduleBtn.textContent = "Scheduled!";
+            scheduleMessage.textContent = "Bot Scheduled Successfully!";
+            scheduleMessage.classList.remove('hidden');
+
+            // Wait a moment before reloading
+            setTimeout(() => {
+                // Redirect user back to the main schedule list after a successful schedule
+                window.location.reload(); 
+            }, 1000);
+
+        } catch (error) {
+            console.error("Error scheduling bot:", error);
+            alert(`Error scheduling bot: ${error.message}`);
+            
+            // Reset button state on failure
+            scheduleBtn.textContent = "Schedule";
+            scheduleBtn.disabled = false;
+            scheduleMessage.classList.add('hidden');
+        }
+    }
+
+
+    // --- Initialization Script ---
+    document.addEventListener("DOMContentLoaded", () => {
+        // Set the default value for the datetime-local input to the current time
+        const now = new Date();
+        // Adjust for local timezone offset to display correctly in the input field
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        scheduleTimeInput.value = now.toISOString().slice(0, 16);
+    });
 </script>
 {% endblock %}

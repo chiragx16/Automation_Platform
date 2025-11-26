@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule Manager{% endblock %}
+{% block heading %}Schedule Manager{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Active Schedules</h2>
+            <p class="text-sm text-gray-500 mt-1">Manage automated run times for your bots.</p>
+        </div>
+        <div class="mt-4 md:mt-0">
+            <a href="{{ url_for('api.launchpad_api.launchpad') }}"
+                class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                        clip-rule="evenodd" />
+                </svg>
+                New Schedule
+            </a>
+        </div>
+    </div>
+
+    <div id="scheduleGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6">
+    </div>
+
+    <div id="noSchedules" class="hidden text-center py-12 bg-white rounded-xl shadow-lg border border-gray-200">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No schedules found</h3>
+        <p class="mt-1 text-sm text-gray-500">Get started by creating a new automation schedule.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // --- API ENDPOINT DEFINITIONS ---
+    const API_BASE_URL = '/api/schedule/schedule_bot/';
+    const JOBS_API_URL = '/api/schedule/jobs';
+
+    // Global array to hold fetched schedule data
+    let schedules = [];
+
+    const scheduleGrid = document.getElementById('scheduleGrid');
+    const noSchedulesDiv = document.getElementById('noSchedules');
+
+    // Helper function to fetch data from the API
+    async function fetchSchedules() {
+        try {
+            const response = await fetch(JOBS_API_URL);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            schedules = data.schedules || [];
+
+            renderSchedules();
+
+        } catch (error) {
+            console.error("Failed to fetch schedules:", error);
+            scheduleGrid.innerHTML = `<div class="text-red-600 p-4 bg-red-100 rounded-lg col-span-full">Error loading schedules. Please check the API server.</div>`;
+            noSchedulesDiv.classList.add('hidden');
+        }
+    }
+
+    function renderSchedules() {
+        scheduleGrid.innerHTML = '';
+
+        if (schedules.length === 0) {
+            noSchedulesDiv.classList.remove('hidden');
+            return;
+        } else {
+            noSchedulesDiv.classList.add('hidden');
+        }
+
+        schedules.forEach(schedule => {
+            const isActive = schedule.status.toUpperCase() === 'ACTIVE';
+            const statusText = isActive ? 'Active' : 'Paused';
+            const nextRunTimeFull = `${schedule.next_run_date} ${schedule.next_run_time}`;
+
+
+            // --- CUSTOM CREATIVE COLOR PALETTE (Indigo and Pink) ---
+
+            const activeColor = {
+                bgGradient: 'bg-gradient-to-br from-indigo-50 to-white',
+                indicatorBorder: 'bg-indigo-500',
+                indicatorDot: 'bg-indigo-700',
+                text: 'text-indigo-700',
+                shadowGlow: 'hover:shadow-[0_0px_5px_0px_rgba(79,70,229,0.3)]'
+            };
+
+            const pausedColor = {
+                bgGradient: 'bg-gradient-to-br from-pink-50 to-white',
+                indicatorBorder: 'bg-pink-500',
+                indicatorDot: 'bg-pink-700',
+                text: 'text-pink-700',
+                shadowGlow: 'hover:shadow-[0_0px_5px_0px_rgba(236,72,153,0.3)]'
+            };
+
+            const statusProps = isActive ? activeColor : pausedColor;
+
+            // --- Action Button Colors ---
+
+            const toggleBtnText = isActive ? 'Pause' : 'Resume';
+
+            const pauseBtnColor = `text-pink-600 hover:text-pink-900 bg-pink-50 hover:bg-pink-100`;
+            const resumeBtnColor = `text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100`;
+
+            const toggleBtnColor = isActive ? pauseBtnColor : resumeBtnColor;
+
+            const toggleBtnIcon = isActive
+                ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
+                : `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+
+
+            const card = document.createElement('div');
+            card.className = `relative rounded-xl shadow-lg p-6 flex flex-col justify-between transform transition-all duration-300 ${statusProps.shadowGlow} ${statusProps.bgGradient} border border-gray-200`;
+            card.setAttribute('data-schedule-id', schedule.schedule_id);
+
+            card.innerHTML = `
+                <div class="absolute top-0 left-0 h-full w-2 rounded-l-xl ${statusProps.indicatorBorder}"></div>
+                
+                <div class="flex-grow">
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
+                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Schedule ID: #${schedule.schedule_id}</span>
+                        <span class="text-sm font-bold uppercase ${statusProps.text} flex items-center gap-1">
+                            <span class="h-2 w-2 rounded-full ${statusProps.indicatorDot} ${isActive ? 'animate-pulse' : ''}"></span>
+                            ${statusText}
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-extrabold text-gray-800 mb-5 break-words leading-snug">
+                        ${schedule.bot_name}
+                    </h3>
+
+                    <div class="p-4 bg-white rounded-lg border border-gray-100 shadow-sm">
+                        <p class="text-sm font-medium text-gray-500 mb-1">Next Scheduled Run:</p>
+                        <div class="flex items-center text-lg text-gray-700 font-bold">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>${nextRunTimeFull}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-5 flex justify-end space-x-3 mt-6">
+                    <button onclick="toggleSchedule(${schedule.schedule_id})" 
+                        class="${toggleBtnColor} px-3 py-2 rounded-lg transition duration-200 flex items-center gap-1.5 font-semibold text-sm shadow-sm hover:shadow-md"
+                        title="${toggleBtnText} Schedule">
+                        ${toggleBtnIcon}
+                        <span>${toggleBtnText}</span>
+                    </button>
+
+                    <button onclick="deleteSchedule(${schedule.schedule_id})" 
+                        class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg transition duration-200 flex items-center gap-1.5 font-semibold text-sm shadow-sm hover:shadow-md"
+                        title="Delete Schedule">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span>Delete</span>
+                    </button>
+                </div>
+            `;
+            scheduleGrid.appendChild(card);
+        });
+    }
+
+    // --- Action Handlers ---
+
+    async function toggleSchedule(id) {
+        const schedule = schedules.find(s => s.schedule_id === id);
+        if (!schedule) return;
+
+        const isCurrentlyActive = schedule.status.toLowerCase() === 'active';
+        const action = isCurrentlyActive ? 'pause' : 'resume';
+        const newStatus = isCurrentlyActive ? 'paused' : 'active';
+
+        const endpoint = `${API_BASE_URL}${id}/${action}`;
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error(`Failed to ${action} schedule ${id}:`, errorData);
+                alert(`Error: Could not ${action} schedule. Check console for details.`);
+                return;
+            }
+
+            schedule.status = newStatus;
+            console.log(`Toggled schedule ${id} to ${newStatus} via API.`);
+
+            renderSchedules();
+
+        } catch (error) {
+            console.error(`Error during API call to ${endpoint}:`, error);
+            alert(`Network Error: Could not reach the API server to ${action}.`);
+        }
+    }
+
+    async function deleteSchedule(id) {
+        if (!confirm('Are you sure you want to delete this schedule? This action cannot be undone.')) {
+            return;
+        }
+
+        const endpoint = `${API_BASE_URL}${id}`;
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'DELETE', // Use DELETE method for deletion
+            });
+
+            // Check for success status codes (200 OK or 204 No Content are common for DELETE)
+            if (response.ok || response.status === 204) {
+
+                // Update local state by filtering out the deleted schedule
+                schedules = schedules.filter(s => s.schedule_id !== id);
+                console.log(`Deleted schedule ${id} via API.`);
+
+                // Re-render the schedules list
+                renderSchedules();
+            } else {
+                // Handle deletion failure
+                const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
+                console.error(`Failed to delete schedule ${id}:`, errorData);
+                alert(`Error: Could not delete schedule ${id}. Status: ${response.status}.`);
+            }
+        } catch (error) {
+            console.error(`Error during API call to ${endpoint}:`, error);
+            alert(`Network Error: Could not reach the API server to delete schedule.`);
+        }
+    }
+
+    // Initial load: Fetch data from the API
+    window.onload = fetchSchedules;
+
+</script>
+{% endblock %}
