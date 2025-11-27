@@ -6,9 +6,9 @@ from sqlalchemy import func, desc
 from pathlib import Path
 import os
 
-launchpad_api = Blueprint('launchpad_api', __name__)
+launchpad_bp = Blueprint('launchpad_bp', __name__)
 
-@launchpad_api.route("/launch-pad")
+@launchpad_bp.route("/launch-pad")
 @login_required
 def launchpad():
     current_user_id = session.get("user", {}).get("id")
@@ -82,12 +82,12 @@ def launchpad():
 
 
  
-@launchpad_api.route("/bot-details", methods=["GET", "POST"])
+@launchpad_bp.route("/bot-details", methods=["GET", "POST"])
 @login_required
 def bot_details_page():
     bot_id = request.form.get("bot_id")
     if not bot_id:
-        return redirect(url_for('api.bot_api.launchpad'))  # Redirect if no ID provided
+        return redirect(url_for('api.launchpad_bp.launchpad'))  # Redirect if no ID provided
 
     # Fetch bot
     bot = db.session.query(Bot).get(bot_id)

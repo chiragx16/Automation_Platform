@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 import os
 
-reports_api = Blueprint('reports_api', __name__)
+schedule_reports_bp = Blueprint('schedule_reports_bp', __name__)
 
 
 def format_datetime_fields(dt: datetime | None) -> tuple[str | None, str | None]:
@@ -27,7 +27,7 @@ def format_datetime_fields(dt: datetime | None) -> tuple[str | None, str | None]
     return date_str, time_str
 
 
-@reports_api.route("/bot-executions", methods=["GET"])
+@schedule_reports_bp.route("/bot-executions", methods=["GET"])
 @login_required
 def get_all_bot_execution_details():
     """
@@ -86,13 +86,13 @@ def get_all_bot_execution_details():
 
 
 
-@reports_api.route("/reports_page", methods=["GET"])
+@schedule_reports_bp.route("/reports_page", methods=["GET"])
 @login_required
 def get_page():
-    return render_template("reports.html")
+    return render_template("schedule_reports.html")
 
 
-@reports_api.route("/schedule_manager_page", methods=["GET"])
+@schedule_reports_bp.route("/schedule_manager_page", methods=["GET"])
 @login_required
 def get_manager_page():
     return render_template("schedule_manager.html")

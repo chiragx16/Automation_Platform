@@ -70,7 +70,7 @@
         </div>
       </div>
       <nav class="flex-1 p-3 space-y-2">
-        <a href="{{ url_for('api.home_api.home') }}"
+        <a href="{{ url_for('api.home_bp.home') }}"
           class="group flex items-center gap-3 px-3 py-2 rounded-xl text-gray-600 hover:bg-brand-50 hover:text-brand-700 transition">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-brand-700" viewBox="0 0 22 22"
             fill="currentColor">
@@ -78,7 +78,7 @@
           </svg>
           <span class="font-medium">Home</span>
         </a>
-        <a href="{{ url_for('api.bot_control_api.bot_control') }}"
+        <a href="{{ url_for('api.bot_control_bp.bot_control') }}"
           class="group flex items-center gap-3 px-3 py-2 rounded-xl text-gray-600 hover:bg-brand-50 hover:text-brand-700 transition">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-brand-700" viewBox="0 0 24 24"
             fill="currentColor">
@@ -86,7 +86,7 @@
           </svg>
           <span class="font-medium">Bot Control</span>
         </a>
-        <a href="{{ url_for('api.launchpad_api.launchpad') }}"
+        <a href="{{ url_for('api.launchpad_bp.launchpad') }}"
           class="group flex items-center gap-3 px-3 py-2 rounded-xl text-gray-600 hover:bg-brand-50 hover:text-brand-700 transition">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-brand-700" viewBox="0 0 24 24"
             fill="currentColor">
@@ -95,7 +95,7 @@
           <span class="font-medium">Launchpad</span>
         </a>
 
-        <a href="{{ url_for('api.reports_api.get_manager_page') }}"
+        <a href="{{ url_for('api.schedule_reports_bp.get_manager_page') }}"
           class="group flex items-center gap-3 px-3 py-2 rounded-xl text-gray-600 hover:bg-brand-50 hover:text-brand-700 transition">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-brand-700" viewBox="0 0 24 26"
             fill="currentColor">
@@ -105,14 +105,24 @@
           <span class="font-medium">Schedule Manager</span>
         </a>
 
-        <a href="{{ url_for('api.reports_api.get_page') }}"
+        <a href="{{ url_for('api.schedule_reports_bp.get_page') }}"
           class="group flex items-center gap-3 px-3 py-2 rounded-xl text-gray-600 hover:bg-brand-50 hover:text-brand-700 transition">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-brand-700" viewBox="0 0 22 26"
             fill="currentColor">
             <path
               d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm0 4l-4 4h2v8h4v-8h2l-4-4z" />
           </svg>
-          <span class="font-medium">Reports</span>
+          <span class="font-medium">Schedule Reports</span>
+        </a>
+
+        <a href="{{ url_for('api.bot_reports_bp.bot_reports_page') }}"
+          class="group flex items-center gap-3 px-3 py-2 rounded-xl text-gray-600 hover:bg-brand-50 hover:text-brand-700 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-brand-700" viewBox="0 0 24 24"
+            fill="currentColor">
+            <path
+              d="M16 11V7h-2v4h-4V7H8v4H4V3h16v8zM4 21h16c1.1 0 2-.9 2-2v-6H2v6c0 1.1.9 2 2 2zm2-5h3v2H6zm5 0h3v2h-3zm5 0h3v2h-3z" />
+          </svg>
+          <span class="font-medium">Bot Reports</span>
         </a>
       </nav>
 
@@ -173,17 +183,18 @@
         </button>
       </div>
       <nav class="space-y-2">
-        <a href="{{ url_for('api.home_api.home') }}"
+        <a href="{{ url_for('api.home_bp.home') }}"
           class="block px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700">Home</a>
-        <a href="{{ url_for('api.bot_control_api.bot_control') }}"
+        <a href="{{ url_for('api.bot_control_bp.bot_control') }}"
           class="block px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700">Bot Control</a>
-        <a href="{{ url_for('api.launchpad_api.launchpad') }}"
+        <a href="{{ url_for('api.launchpad_bp.launchpad') }}"
           class="block px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700">Launchpad</a>
-        <a href="{{ url_for('api.reports_api.get_manager_page') }}"
+        <a href="{{ url_for('api.schedule_reports_bp.get_manager_page') }}"
           class="block px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700">Schedule Manager</a>
-
-        <a href="{{ url_for('api.reports_api.get_page') }}"
-          class="block px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700">Reports</a>
+        <a href="{{ url_for('api.schedule_reports_bp.get_page') }}"
+          class="block px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700">Schedule Reports</a>
+        <a href="{{ url_for('api.bot_reports_bp.bot_reports_page') }}"
+          class="block px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700">Bot Reports</a>
       </nav>
     </div>
   </div>

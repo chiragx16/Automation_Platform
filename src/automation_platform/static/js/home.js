@@ -38,7 +38,7 @@ function getStatusClasses(status) {
                 textClass: 'text-emerald-600', 
                 bgClass: 'bg-emerald-100 text-emerald-800' 
             };
-        case 'FAILURE':
+        case 'FAILED':
             return { 
                 textClass: 'text-red-600', 
                 bgClass: 'bg-red-100 text-red-800' 
@@ -47,6 +47,11 @@ function getStatusClasses(status) {
             return { 
                 textClass: 'text-brand-600', 
                 bgClass: 'bg-brand-100 text-brand-800' 
+            };
+        case 'TIMEOUT':
+            return { 
+                textClass: 'text-brand-600', 
+                bgClass: 'bg-yellow-100 text-yellow-800' 
             };
         default:
             return { 

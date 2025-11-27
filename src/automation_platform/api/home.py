@@ -6,14 +6,14 @@ from sqlalchemy import func, desc
 from pathlib import Path
 import os
 
-home_api = Blueprint('home_api', __name__)
+home_bp = Blueprint('home_bp', __name__)
 
-@home_api.route('/')
+@home_bp.route('/')
 @login_required
 def home():
     return render_template("home.html")
 
-@home_api.route("/stats")
+@home_bp.route("/stats")
 @login_required
 def api_stats():
 
@@ -28,7 +28,7 @@ def api_stats():
     })
 
 
-@home_api.route("/latest_executions", methods=["GET"])
+@home_bp.route("/latest_executions", methods=["GET"])
 @login_required
 def get_last_5_executions():
     executions = (

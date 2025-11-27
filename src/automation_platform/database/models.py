@@ -213,3 +213,21 @@ class BotExecution(db.Model):
     bot = relationship("Bot", back_populates="executions")
     schedule = relationship("BotSchedule", back_populates="executions")
     triggered_by_user = relationship("User", back_populates="executions_triggered")
+
+
+# ===========================
+# Bot Custome Log Table
+# ===========================
+class BotLogSource(db.Model):
+    __tablename__ = "BotLogSource"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    bot_id = Column(Integer, ForeignKey("Bot.bot_id", ondelete="CASCADE"), nullable=False)
+
+    # Friendly name to display on UI
+    display_name = Column(String(255), nullable=False)
+
+    # Route inside the bot that returns logs
+    endpoint_path = Column(String(255), nullable=False)
+    
+    bot = relationship("Bot", backref="log_sources", cascade="all, delete")

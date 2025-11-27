@@ -30,6 +30,7 @@ def create_app():
     app.permanent_session_lifetime = timedelta(days=30)
     app.config["SQLALCHEMY_DATABASE_URI"] = settings.SQLALCHEMY_DATABASE_URI
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["BOT_EXECUTION_TIMEOUT"] = None
 
     # --- Extensions init ---
     CORS(app)
@@ -57,7 +58,7 @@ def register_routes(app):
     def index():
         if "user" not in session:
             return redirect(url_for("auth.login_page"))
-        return redirect(url_for("api.home_api.home"))
+        return redirect(url_for("api.home_bp.home"))
     
     @app.route("/login_orgs")
     def login_orgs():

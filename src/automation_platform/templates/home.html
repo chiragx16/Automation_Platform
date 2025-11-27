@@ -28,14 +28,14 @@
     <div class="rounded-2xl bg-white shadow-sm border border-gray-200 p-5">
       <div class="flex items-center justify-between mb-4">
         <h3 class="font-semibold">Active Bots</h3>
-        <a href="{{ url_for('api.bot_control_api.bot_control') }}" class="text-sm text-brand-600 hover:underline">View all</a>
+        <a href="{{ url_for('api.bot_control_bp.bot_control') }}" class="text-sm text-brand-600 hover:underline">View all</a>
       </div>
       <div id="active-list" class="space-y-3"></div>
     </div>
     <div class="rounded-2xl bg-white shadow-sm border border-gray-200 p-5">
       <div class="flex items-center justify-between mb-4">
         <h3 class="font-semibold">Recent Runs</h3>
-        <a href="{{ url_for('api.reports_api.get_page') }}" class="text-sm text-brand-600 hover:underline">Bot reports</a>
+        <a href="{{ url_for('api.schedule_reports_bp.get_page') }}" class="text-sm text-brand-600 hover:underline">Bot reports</a>
       </div>
       <div id="recent-list" class="space-y-3"></div>
     </div>

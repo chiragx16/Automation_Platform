@@ -9,9 +9,9 @@ from datetime import datetime, timezone
 from croniter import croniter
 import pytz
 
-schedule_api = Blueprint('schedule_api', __name__)
+schedule_bp = Blueprint('schedule_bp', __name__)
 
-@schedule_api.route('/run/<int:bot_id>', methods=['POST'])
+@schedule_bp.route('/run/<int:bot_id>', methods=['POST'])
 @login_required
 def run_bot_immediately(bot_id):
     """
@@ -52,7 +52,7 @@ def run_bot_immediately(bot_id):
         return jsonify({'error': str(e)}), 500
 
 
-@schedule_api.route('/schedule_bot', methods=['POST'])
+@schedule_bp.route('/schedule_bot', methods=['POST'])
 @login_required
 def create_schedule():
     """
@@ -127,7 +127,7 @@ def create_schedule():
         return jsonify({'error': str(e)}), 500
 
 
-@schedule_api.route('/schedule_bot/<int:schedule_id>', methods=['PUT'])
+@schedule_bp.route('/schedule_bot/<int:schedule_id>', methods=['PUT'])
 @login_required
 def update_schedule(schedule_id):
     """
@@ -186,7 +186,7 @@ def update_schedule(schedule_id):
         return jsonify({'error': str(e)}), 500
 
 
-@schedule_api.route('/schedule_bot/<int:schedule_id>', methods=['DELETE'])
+@schedule_bp.route('/schedule_bot/<int:schedule_id>', methods=['DELETE'])
 @login_required
 def delete_schedule(schedule_id):
     """
@@ -221,7 +221,7 @@ def delete_schedule(schedule_id):
         return jsonify({'error': str(e)}), 500
 
 
-@schedule_api.route('/schedule_bot/<int:schedule_id>/pause', methods=['POST'])
+@schedule_bp.route('/schedule_bot/<int:schedule_id>/pause', methods=['POST'])
 @login_required
 def pause_schedule(schedule_id):
     try:
@@ -249,7 +249,7 @@ def pause_schedule(schedule_id):
 
 
 
-@schedule_api.route('/schedule_bot/<int:schedule_id>/resume', methods=['POST'])
+@schedule_bp.route('/schedule_bot/<int:schedule_id>/resume', methods=['POST'])
 @login_required
 def resume_schedule(schedule_id):
     try:
@@ -275,7 +275,7 @@ def resume_schedule(schedule_id):
 
 
 
-@schedule_api.route('/execution/<int:execution_id>', methods=['GET'])
+@schedule_bp.route('/execution/<int:execution_id>', methods=['GET'])
 @login_required
 def get_execution_status(execution_id):
     """
@@ -308,7 +308,7 @@ def get_execution_status(execution_id):
         return jsonify({'error': str(e)}), 500
 
 
-@schedule_api.route('/bot/<int:bot_id>/executions', methods=['GET'])
+@schedule_bp.route('/bot/<int:bot_id>/executions', methods=['GET'])
 @login_required
 def get_bot_executions(bot_id):
     """
@@ -355,7 +355,7 @@ def get_bot_executions(bot_id):
 
 
 
-@schedule_api.route('/jobs', methods=['GET'])
+@schedule_bp.route('/jobs', methods=['GET'])
 @login_required
 def get_all_schedules():
     try:

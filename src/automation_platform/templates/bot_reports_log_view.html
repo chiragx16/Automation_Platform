@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Log Report{% endblock %}
+{% block heading %}Report: <span id="logViewTitle">...</span>{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('api.bot_reports_bp.bot_reports_page') }}"
+    class="inline-flex items-center text-brand-600 hover:text-brand-800 mb-4">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z" />
+    </svg>
+    Back to Reports
+</a>
+
+<div class="flex justify-between items-start mb-4">
+    
+    <div class="flex-grow">
+        <h3 id="reportTitle" class="text-xl font-bold text-brand-700"></h3>
+        <p id="reportSubtitle" class="text-sm text-gray-600 mt-1"></p> 
+    </div>
+
+    <div class="flex-shrink-0 pt-1">
+        <a id="downloadExcelButton"
+            class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition duration-150 ease-in-out shadow-md disabled:opacity-50"
+            role="button" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Download Excel
+        </a>
+    </div>
+</div>
+
+<div class="mb-4">
+    <input type="text" id="logSearchInput" placeholder="Search logs..."
+        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 shadow-sm"
+        disabled>
+</div>
+
+<div id="reportViewContainer"
+    class="max-w-[940px] bg-white rounded-xl shadow-lg border border-gray-200 w-full overflow-hidden">
+    
+    <div id="logTablePlaceholder" class="border border-gray-200 rounded-lg overflow-hidden">
+        <div class="p-4 bg-gray-50 text-gray-500 text-sm">
+            Fetching report data...
+        </div>
+    </div>
+    
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{# Log View specific script will be needed for fetching data on this page #}
+<script src="{{ url_for('static', filename='js/log_view.js') }}"></script>
+{% endblock %}

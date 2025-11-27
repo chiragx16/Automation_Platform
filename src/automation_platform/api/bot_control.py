@@ -6,10 +6,10 @@ from sqlalchemy import func, desc
 from pathlib import Path
 import os
 
-bot_control_api = Blueprint('bot_control_api', __name__)
+bot_control_bp = Blueprint('bot_control_bp', __name__)
 
 
-@bot_control_api.route("/bot-control", methods=["GET", "POST"])
+@bot_control_bp.route("/bot-control", methods=["GET", "POST"])
 @login_required
 def bot_control():
     current_user_id = session.get("user", {}).get("id")
@@ -85,7 +85,7 @@ def bot_control():
 
 
 
-@bot_control_api.route("/bot-control-orgs", methods=["GET"])
+@bot_control_bp.route("/bot-control-orgs", methods=["GET"])
 @login_required
 def get_organizations():
     current_user_id = session.get("user", {}).get("id")
@@ -144,7 +144,7 @@ def get_organizations():
 
 
 
-@bot_control_api.route("/bot-control/logs", methods=["GET", "POST"])
+@bot_control_bp.route("/bot-control/logs", methods=["GET", "POST"])
 @login_required
 def bot_logs_page():
     bot_id = None
@@ -158,7 +158,7 @@ def bot_logs_page():
     return render_template("bot-control-logs.html", bot_id=bot_id)
 
 
-@bot_control_api.route("/bot-wise-logs", methods=["POST"])
+@bot_control_bp.route("/bot-wise-logs", methods=["POST"])
 @login_required
 def get_bot_logs():
     data = request.get_json(silent=True)
@@ -192,7 +192,7 @@ def get_bot_logs():
 
 
 
-@bot_control_api.route("/set-status", methods=["POST"])
+@bot_control_bp.route("/set-status", methods=["POST"])
 @admin_required
 def set_bot_status():
     data = request.get_json() or {}
@@ -225,7 +225,7 @@ def set_bot_status():
 
 
 # --- API Route 1: Fetch all active Organizations ---
-@bot_control_api.route('/organizations', methods=['GET'])
+@bot_control_bp.route('/organizations', methods=['GET'])
 @login_required
 def get_model_organizations():
     # 1. Get bot_id from query parameters
@@ -258,7 +258,7 @@ def get_model_organizations():
     
 
 # --- API Route 2: Fetch active Users based on Organization ID ---
-@bot_control_api.route('/users', methods=['POST'])
+@bot_control_bp.route('/users', methods=['POST'])
 @login_required
 def get_users_by_organization():
     data = request.get_json()
@@ -287,7 +287,7 @@ def get_users_by_organization():
         return jsonify({"error": "Failed to load users for the organization."}), 500
 
 
-@bot_control_api.route("/check-permission", methods=["POST"])
+@bot_control_bp.route("/check-permission", methods=["POST"])
 @login_required
 def check_permission():
     data = request.get_json()
@@ -308,7 +308,7 @@ def check_permission():
     }), 200
 
 
-@bot_control_api.route("/assign-user", methods=["POST"])
+@bot_control_bp.route("/assign-user", methods=["POST"])
 @admin_required
 def assign_user_to_bot():
     data = request.get_json()
@@ -350,7 +350,7 @@ def assign_user_to_bot():
         return jsonify({"error": "Failed to assign user", "details": str(e)}), 500
     
 
-@bot_control_api.route("/remove-user", methods=["POST"])
+@bot_control_bp.route("/remove-user", methods=["POST"])
 @admin_required
 def remove_user_from_bot():
     data = request.get_json()

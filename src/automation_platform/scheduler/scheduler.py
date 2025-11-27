@@ -122,17 +122,22 @@ def _run_bot_script(bot: Bot, app):
         logger.info(f"Executing bot {bot.bot_id} with command: {' '.join(cmd)}")
         
         # Get timeout from config or use default
-        timeout = getattr(app.config, 'BOT_EXECUTION_TIMEOUT', 3600)
-        
-        # Execute with timeout
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            check=False,
-            cwd=abs_path.parent  # Set working directory to script's directory
-        )
+        timeout = getattr(app.config, 'BOT_EXECUTION_TIMEOUT', None)
+
+        # Common arguments
+        subprocess_kwargs = {
+            'capture_output': True,
+            'text': True,
+            'check': False,
+            'cwd': abs_path.parent
+        }
+
+        # Execute with or without timeout
+        if timeout:
+            result = subprocess.run(cmd, timeout=timeout, **subprocess_kwargs)
+        else:
+            result = subprocess.run(cmd, **subprocess_kwargs)
+
         
         # Log output to bot's log file if specified
         if bot.log_file_path:

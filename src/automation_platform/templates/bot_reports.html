@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Report Sources{% endblock %}
+{% block heading %}Custom Report Sources{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    {# --- Section: Report Source Cards --- #}
+    <div class="w-full bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+        <h2 class="text-2xl font-semibold mb-6 text-gray-800 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mr-3 text-brand-600" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 9v2h2v-2h-2zm0 4v2h2v-2h-2zm-4-4v2h2v-2h-2zm0 4v2h2v-2h-2zm0 4v2h2v-2h-2z" />
+            </svg>
+            Available Bot reports
+        </h2>
+        
+        {# Container for Bot Cards #}
+        <div id="logSourceListContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 gap-6">
+            <div id="loadingIndicator" class="text-lg text-gray-500 col-span-full p-4 text-center">
+                Loading available report sources...
+            </div>
+            <div id="noBotsMessage" class="hidden text-center col-span-full p-6 border border-dashed border-gray-300 rounded-lg bg-gray-50">
+                <p class="text-lg text-gray-500">No active custom report sources found for your organization.</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{# Inject the source_id variable into the template to be used by JS #}
+<script>
+    // 1. This generates a URL like: /api/bot_reports/view_log_table/0
+    const LOG_VIEW_URL_BASE = "{{ url_for('api.bot_reports_bp.view_log_table', source_id=0) }}"; 
+    
+    // 2. We use this variable name in JS to ensure the placeholder replacement works.
+    const LOG_VIEW_URL_TEMPLATE = LOG_VIEW_URL_BASE.replace('/0', '/SOURCE_ID_PLACEHOLDER');
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/bot_reports.js') }}"></script>
+{% endblock %}
