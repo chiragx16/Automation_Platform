@@ -4,6 +4,7 @@ from automation_platform.database.models import (
     Bot, BotSchedule, BotExecution, ExecutionStatus, User
 )
 from automation_platform.scheduler.scheduler import scheduler_service
+from automation_platform.scheduler.scheduler import kill_bot
 from automation_platform.auth.middleware import login_required
 from datetime import datetime, timezone
 from croniter import croniter
@@ -49,6 +50,7 @@ def run_bot_immediately(bot_id):
         }), 202
         
     except Exception as e:
+        print(e)
         return jsonify({'error': str(e)}), 500
 
 
@@ -401,3 +403,29 @@ def get_all_schedules():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+@schedule_bp.route('/kill', methods=['POST'])
+@login_required
+def kill_running_bot():
+    """
+    Force-stop a running bot.
+    Expects JSON body: {"bot_id": <int>}
+    """
+    data = request.get_json() or {}
+    bot_id = data.get("bot_id")
+
+    if not bot_id:
+        return jsonify({"success": False, "error": "bot_id is required"}), 400
+
+    result = kill_bot(bot_id)
+
+    status_code = 200 if result.get("success") else 400
+    return jsonify(result), status_code
+
+
+@schedule_bp.route('/running-bots', methods=['GET'])
+@login_required
+def api_running_bots():
+    running = scheduler_service.get_running_bots()
+    return jsonify({"running_bots": running})

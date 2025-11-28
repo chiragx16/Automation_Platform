@@ -40,7 +40,8 @@
             id="scheduleOption"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-brand-600 focus:border-brand-600"
         >
-            <option value="15m" selected>Every 15 Minutes</option>
+            <option value="5m" selected>Every 5 Minutes</option>
+            <option value="15m">Every 15 Minutes</option>
             <option value="30m">Every 30 Minutes</option>
             <option value="1h">Every 1 Hour</option>
             <option value="3h">Every 3 Hour</option>
@@ -98,6 +99,9 @@
         const hour = date.getHours();
 
         switch (option) {
+            case '5m':
+                // Every 5 minutes, runs every minute divisible by 5.
+                return `*/5 * * * *`;
             case '15m':
                 // Every 15 minutes, runs every minute divisible by 15.
                 return `*/15 * * * *`;
