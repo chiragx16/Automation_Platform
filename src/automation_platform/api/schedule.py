@@ -1,7 +1,7 @@
 from flask import Blueprint, session, request, jsonify
 from automation_platform.database.database import db
 from automation_platform.database.models import (
-    Bot, BotSchedule, BotExecution, ExecutionStatus, User
+    Bot, BotSchedule, BotExecution, ExecutionStatus, User, BotAssignment
 )
 from automation_platform.scheduler.scheduler import scheduler_service
 from automation_platform.scheduler.scheduler import kill_bot
@@ -424,8 +424,60 @@ def kill_running_bot():
     return jsonify(result), status_code
 
 
+# @schedule_bp.route('/running-bots', methods=['GET'])
+# @login_required
+# def api_running_bots():
+#     # Get the list of running bot ids (assuming it's a list of bot ids)
+#     running_bots = scheduler_service.get_running_bots()
+
+#     # Fetch the corresponding Bot objects using db.session.get
+#     bots_info = []
+#     for bot_id in running_bots:
+#         bot = db.session.get(Bot, bot_id)
+#         if bot:  # Ensure the bot exists
+#             bots_info.append({"bot_id": bot.bot_id, "bot_name": bot.bot_name})
+
+#     return jsonify({"running_bots": bots_info})
+
+
+
 @schedule_bp.route('/running-bots', methods=['GET'])
 @login_required
 def api_running_bots():
-    running = scheduler_service.get_running_bots()
-    return jsonify({"running_bots": running})
+    # Get the current user's ID from the session
+    user_id = session.get("user", {}).get("id")
+
+    # Fetch the user from the database
+    user = db.session.get(User, user_id)
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    # Check if the user is an admin
+    is_admin = user.is_admin
+
+    # Get the list of running bot ids (assuming it's a list of bot ids)
+    running_bots = scheduler_service.get_running_bots()
+
+    bots_info = []
+    
+    if is_admin:
+        # Admin users can see all running bots
+        bots = Bot.query.filter(Bot.bot_id.in_(running_bots)).all()
+        for bot in bots:
+            bots_info.append({"bot_id": bot.bot_id, "bot_name": bot.bot_name})
+    else:
+        # Non-admin users can only see bots assigned to them or created by them
+        # Fetch assigned bots to the user
+        assigned_bots = db.session.query(Bot).join(BotAssignment).filter(BotAssignment.user_id == user_id, Bot.bot_id.in_(running_bots)).all()
+        
+        # Fetch bots created by the user
+        created_bots = db.session.query(Bot).filter(Bot.created_by == user_id, Bot.bot_id.in_(running_bots)).all()
+
+        # Combine the two lists, ensuring no duplicates (set union)
+        all_relevant_bots = set(assigned_bots) | set(created_bots)
+
+        for bot in all_relevant_bots:
+            bots_info.append({"bot_id": bot.bot_id, "bot_name": bot.bot_name})
+
+    return jsonify({"running_bots": bots_info})

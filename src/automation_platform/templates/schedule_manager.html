@@ -10,7 +10,17 @@
             <h2 class="text-2xl font-bold text-gray-800">Active Schedules</h2>
             <p class="text-sm text-gray-500 mt-1">Manage automated run times for your bots.</p>
         </div>
-        <div class="mt-4 md:mt-0">
+        <div class="mt-4 md:mt-0 flex space-x-3">
+            <button onclick="fetchAndDisplayRunningBots()"
+                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clip-rule="evenodd" />
+                </svg>
+                Manage Running Bots
+            </button>
+            
             <a href="{{ url_for('api.launchpad_bp.launchpad') }}"
                 class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -23,7 +33,7 @@
         </div>
     </div>
 
-    <div id="scheduleGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6">
+    <div id="scheduleGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-1 gap-6">
     </div>
 
     <div id="noSchedules" class="hidden text-center py-12 bg-white rounded-xl shadow-lg border border-gray-200">
@@ -35,6 +45,44 @@
         <p class="mt-1 text-sm text-gray-500">Get started by creating a new automation schedule.</p>
     </div>
 </div>
+
+<div id="killProcessesModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeModal()"></div>
+
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                            Manage Running Processes
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500 mb-4">
+                                Kill individual bots using the button next to the process name.
+                            </p>
+                            <div id="runningBotsList" class="max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
+                                <p class="text-gray-400">Loading running bots...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="closeModal()"
+                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -42,15 +90,34 @@
     // --- API ENDPOINT DEFINITIONS ---
     const API_BASE_URL = '/api/schedule/schedule_bot/';
     const JOBS_API_URL = '/api/schedule/jobs';
+    const RUNNING_BOTS_URL = '/api/schedule/running-bots';
+    // UPDATED: Use the new POST route for killing a bot
+    const KILL_SINGLE_BOT_URL = '/api/schedule/kill'; 
+
 
     // Global array to hold fetched schedule data
     let schedules = [];
 
     const scheduleGrid = document.getElementById('scheduleGrid');
     const noSchedulesDiv = document.getElementById('noSchedules');
+    const modal = document.getElementById('killProcessesModal');
+    const runningBotsList = document.getElementById('runningBotsList');
 
-    // Helper function to fetch data from the API
+
+    // --- Modal Functions (No Change) ---
+
+    function openModal() {
+        modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+        modal.classList.add('hidden');
+    }
+
+    // --- Data Fetching and Display Functions (No Change) ---
+
     async function fetchSchedules() {
+        // ... (Existing fetchSchedules logic remains the same)
         try {
             const response = await fetch(JOBS_API_URL);
 
@@ -72,6 +139,7 @@
     }
 
     function renderSchedules() {
+        // ... (Existing renderSchedules logic remains the same)
         scheduleGrid.innerHTML = '';
 
         if (schedules.length === 0) {
@@ -87,13 +155,11 @@
             const nextRunTimeFull = `${schedule.next_run_date} ${schedule.next_run_time}`;
 
 
-            // --- CUSTOM CREATIVE COLOR PALETTE (Indigo and Pink) ---
-
             const activeColor = {
                 bgGradient: 'bg-gradient-to-br from-indigo-50 to-white',
                 indicatorBorder: 'bg-indigo-500',
-                indicatorDot: 'bg-indigo-700',
-                text: 'text-indigo-700',
+                indicatorDot: 'bg-green-700',
+                dotText: 'text-green-700',
                 shadowGlow: 'hover:shadow-[0_0px_5px_0px_rgba(79,70,229,0.3)]'
             };
 
@@ -101,21 +167,15 @@
                 bgGradient: 'bg-gradient-to-br from-pink-50 to-white',
                 indicatorBorder: 'bg-pink-500',
                 indicatorDot: 'bg-pink-700',
-                text: 'text-pink-700',
+                dotText: 'text-red-700',
                 shadowGlow: 'hover:shadow-[0_0px_5px_0px_rgba(236,72,153,0.3)]'
             };
 
             const statusProps = isActive ? activeColor : pausedColor;
-
-            // --- Action Button Colors ---
-
             const toggleBtnText = isActive ? 'Pause' : 'Resume';
-
             const pauseBtnColor = `text-pink-600 hover:text-pink-900 bg-pink-50 hover:bg-pink-100`;
             const resumeBtnColor = `text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100`;
-
             const toggleBtnColor = isActive ? pauseBtnColor : resumeBtnColor;
-
             const toggleBtnIcon = isActive
                 ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
                 : `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
@@ -126,56 +186,158 @@
             card.setAttribute('data-schedule-id', schedule.schedule_id);
 
             card.innerHTML = `
-                <div class="absolute top-0 left-0 h-full w-2 rounded-l-xl ${statusProps.indicatorBorder}"></div>
-                
-                <div class="flex-grow">
-                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
-                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Schedule ID: #${schedule.schedule_id}</span>
-                        <span class="text-sm font-bold uppercase ${statusProps.text} flex items-center gap-1">
-                            <span class="h-2 w-2 rounded-full ${statusProps.indicatorDot} ${isActive ? 'animate-pulse' : ''}"></span>
-                            ${statusText}
-                        </span>
-                    </div>
+            <div class="absolute top-0 left-0 h-full w-2 rounded-l-xl ${statusProps.indicatorBorder}"></div>
+            
+            <div class="flex-grow">
+                <div class="flex items-center justify-between pb-2 border-b border-gray-100">
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Schedule ID: #${schedule.schedule_id}</span>
+                    <span class="text-sm font-bold uppercase ${statusProps.dotText} flex items-center gap-1">
+                        <span class="h-2 w-2 rounded-full ${statusProps.indicatorDot} ${isActive ? 'animate-pulse' : ''}"></span>
+                        ${statusText}
+                    </span>
+                </div>
 
-                    <h3 class="text-2xl font-extrabold text-gray-800 mb-5 break-words leading-snug">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h3 class="text-xl font-extrabold text-gray-800 break-words leading-snug">
                         ${schedule.bot_name}
                     </h3>
 
-                    <div class="p-4 bg-white rounded-lg border border-gray-100 shadow-sm">
-                        <p class="text-sm font-medium text-gray-500 mb-1">Next Scheduled Run:</p>
-                        <div class="flex items-center text-lg text-gray-700 font-bold">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <div class="p-0 bg-white rounded-lg border border-gray-100 shadow-sm flex-shrink-0">
+                        
+                        <div class="p-2 flex items-center text-lg text-gray-700 font-bold">
+                            <span class="text-sm font-medium text-gray-600">Next Scheduled Run:</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 ml-5 w-5 mr-2 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <span>${nextRunTimeFull}</span>
+                            <span class="text-sm">${nextRunTimeFull}</span>
                         </div>
                     </div>
-                </div>
 
-                <div class="pt-5 flex justify-end space-x-3 mt-6">
-                    <button onclick="toggleSchedule(${schedule.schedule_id})" 
-                        class="${toggleBtnColor} px-3 py-2 rounded-lg transition duration-200 flex items-center gap-1.5 font-semibold text-sm shadow-sm hover:shadow-md"
-                        title="${toggleBtnText} Schedule">
-                        ${toggleBtnIcon}
-                        <span>${toggleBtnText}</span>
-                    </button>
+                    <div class="flex justify-end space-x-3">
+                        <button onclick="toggleSchedule(${schedule.schedule_id})" 
+                            class="${toggleBtnColor} px-3 py-2 rounded-lg transition duration-200 flex items-center gap-1.5 font-semibold text-sm shadow-sm hover:shadow-md"
+                            title="${toggleBtnText} Schedule">
+                            ${toggleBtnIcon}
+                            <span>${toggleBtnText}</span>
+                        </button>
 
-                    <button onclick="deleteSchedule(${schedule.schedule_id})" 
-                        class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg transition duration-200 flex items-center gap-1.5 font-semibold text-sm shadow-sm hover:shadow-md"
-                        title="Delete Schedule">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                        <span>Delete</span>
-                    </button>
+                        <button onclick="deleteSchedule(${schedule.schedule_id})" 
+                            class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg transition duration-200 flex items-center gap-1.5 font-semibold text-sm shadow-sm hover:shadow-md"
+                            title="Delete Schedule">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span>Delete</span>
+                        </button>
+                    </div>
                 </div>
-            `;
+            </div>
+        `;
             scheduleGrid.appendChild(card);
         });
     }
 
+    async function fetchAndDisplayRunningBots() {
+        runningBotsList.innerHTML = '<p class="text-center py-2 text-indigo-600">Loading running bots...</p>';
+        openModal();
+
+        try {
+            const response = await fetch(RUNNING_BOTS_URL);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const runningBots = data.running_bots || [];
+
+            if (runningBots.length === 0) {
+                runningBotsList.innerHTML = '<p class="text-center py-2 text-gray-500">No bots are currently running.</p>';
+            } else {
+                let listHtml = '<ul class="divide-y divide-gray-200">';
+                runningBots.forEach(bot => {
+                    listHtml += `<li class="py-2 flex justify-between items-center">
+                                    <span class="text-gray-900 font-medium">${bot.bot_name}</span>
+                                    <button onclick="killSingleBot(${bot.bot_id}, '${bot.bot_name}')" data-bot-id="${bot.bot_id}"
+                                        class="kill-single-btn text-xs font-semibold text-red-600 hover:text-white bg-red-100 hover:bg-red-600 px-2.5 py-1 rounded-md transition duration-150">
+                                        Kill
+                                    </button>
+                                </li>`;
+                });
+                listHtml += '</ul>';
+                runningBotsList.innerHTML = listHtml;
+            }
+
+        } catch (error) {
+            console.error("Failed to fetch running bots:", error);
+            runningBotsList.innerHTML = `<p class="text-center py-2 text-red-600">Error: Could not load running bot data.</p>`;
+        }
+    }
+
+
     // --- Action Handlers ---
 
+    // UPDATED: Function to send a POST request with JSON body
+    async function killSingleBot(botId, botName) {
+        if (!confirm(`Are you sure you want to kill the bot: ${botName} (ID: ${botId})?`)) {
+            return;
+        }
+
+        const killButton = document.querySelector(`.kill-single-btn[data-bot-id="${botId}"]`);
+        const originalText = killButton.textContent;
+        
+        killButton.disabled = true;
+        killButton.textContent = 'Stopping...';
+        killButton.classList.add('opacity-50');
+
+        const endpoint = KILL_SINGLE_BOT_URL; // Use the new POST route
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST', // Changed from DELETE to POST
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ // Send bot_id in the JSON body
+                    "bot_id": botId
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    alert(`Success: Bot ${botName} (ID: ${botId}) has been stopped.`);
+                    // Re-fetch and re-render the list inside the modal
+                    fetchAndDisplayRunningBots();
+                } else {
+                    alert(`Error: ${result.error || 'Failed to stop bot.'}`);
+                    console.error(`Failed to kill bot ${botId}:`, result);
+                }
+            } else {
+                // Handle non-200/non-204 status codes
+                const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
+                console.error(`Failed to kill bot ${botId}:`, errorData);
+                alert(`Error: Could not kill bot ${botName}. Status: ${response.status}.`);
+            }
+        } catch (error) {
+            console.error(`Network error while attempting to kill bot ${botId}:`, error);
+            alert("Network Error: Could not reach the API server to kill the bot.");
+        } finally {
+            // Restore button state if re-fetch failed or was skipped
+            if (document.body.contains(killButton)) {
+                killButton.disabled = false;
+                killButton.textContent = originalText;
+                killButton.classList.remove('opacity-50');
+            }
+        }
+    }
+
+
+    // Function linked to the main page button (now just opens the modal)
+    function killAllProcesses() {
+        fetchAndDisplayRunningBots();
+    }
+
+    // Existing toggleSchedule and deleteSchedule functions...
     async function toggleSchedule(id) {
         const schedule = schedules.find(s => s.schedule_id === id);
         if (!schedule) return;
@@ -244,6 +406,7 @@
             alert(`Network Error: Could not reach the API server to delete schedule.`);
         }
     }
+
 
     // Initial load: Fetch data from the API
     window.onload = fetchSchedules;
