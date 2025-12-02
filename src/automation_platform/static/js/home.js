@@ -7,13 +7,14 @@ const fmt = (n)=> new Intl.NumberFormat().format(n);
  * @returns {string} Formatted date/time string.
  */
 function formatRunTime(timestamp) {
-    // The input format is 'YYYY-MM-DD HH:MM:SS', which is not standard ISO,
-    // so we replace the space with 'T' for robust Date parsing.
-    const date = new Date(timestamp.replace(' ', 'T'));
+    if (!timestamp) { 
+        return "Not completed"; 
+    }
     
-    // Check if the date is valid
+    const date = new Date(timestamp.replace(' ', 'T'));
+
     if (isNaN(date)) {
-        return timestamp; 
+        return timestamp;
     }
 
     const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
@@ -24,6 +25,7 @@ function formatRunTime(timestamp) {
 
     return `${formattedDate} at ${formattedTime}`;
 }
+
 
 
 /**
