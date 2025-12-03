@@ -1,19 +1,18 @@
+![Python](https://img.shields.io/badge/Python-3.13+-3776AB?logo=python&logoColor=gold)
+![Flask](https://img.shields.io/badge/Flask-3.x-000000?logo=flask)
+![Poetry](https://img.shields.io/badge/Poetry-Package_Manager-purple?logo=poetry&logoColor=blue)
+![MySQL](https://img.shields.io/badge/MySQL-Database-orange?logo=mysql&logoColor=white)
+![APScheduler](https://img.shields.io/badge/APScheduler-Job_Scheduler-CC0000?logo=clockify)
+![REST API](https://img.shields.io/badge/REST_API-Backend-4479A1?logo=fastapi)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-ORM-green?logo=sqlalchemy&logoColor=yellow)
+
+
+**Project Dashboard (Trello):** [Automation Platform Trello](https://trello.com/b/zYFiB5vx/automation-platform)
+
+<hr style="height:1px; opacity:0.3; border:0; background-color:#ccc;" />
+
+
 # Automation Platform - Setup Guide
-
-![Python](https://img.shields.io/badge/Python-3.13+-blue?logo=python&logoColor=gold)
-![Flask](https://img.shields.io/badge/Flask-3.x-black?logo=flask&logoColor=gold)
-![Poetry](https://img.shields.io/badge/Poetry-Package%20Manager-purple?logo=poetry&logoColor=blue)
-![MySQL](https://img.shields.io/badge/Database-MySQL-orange?logo=mysql&logoColor=red)
-![APScheduler](https://img.shields.io/badge/Scheduler-APScheduler-red?logo=apscheduler&logoColor=red)
-![REST API](https://img.shields.io/badge/Backend-REST%20API-lightgrey)
-![Repo](https://img.shields.io/badge/GitHub-Automation__Platform-black?logo=github)
-
-**Project Dashboard (Trello):** https://trello.com/b/zYFiB5vx/automation-platform
-
-**Project Dashboard (Trello):** https://trello.com/b/zYFiB5vx/automation-platform
-
-**Tags:** `Python` · `Flask` · `Automation` · `APScheduler` · `Socket Programming` · `OAuth` · `Poetry` · `MySQL`
-
 
 Follow the steps below to set up and run the **Automation Platform** project on your local system.
 
