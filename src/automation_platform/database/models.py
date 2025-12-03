@@ -117,7 +117,7 @@ class Bot(db.Model):
     script_path = Column(Text, nullable=False)
 
     # Path to bot’s virtual environment
-    venv_path = Column(Text, nullable=False)   
+    venv_path = Column(Text, nullable=True)  
 
     # Path to log file
     log_file_path = Column(Text, nullable=True)
