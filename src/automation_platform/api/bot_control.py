@@ -178,7 +178,7 @@ def get_bot_logs():
 
     content = ""
     if log_file and log_file.exists():
-        with log_file.open("r", encoding="utf-8") as f:
+        with open(log_file, "r", encoding="utf-8", errors="replace") as f:
             content = f.read()
     else:
         content = "Log file not found"
