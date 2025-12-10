@@ -106,6 +106,7 @@ def bot_details_page():
         page_title=f"Details: {bot.bot_name}",
         bot_id=bot.bot_id,
         bot_name=bot.bot_name,
+        bot_description=bot.description,
         org_name=bot.organization.organization_name if bot.organization else "N/A",
         category_name=category_name
     )
