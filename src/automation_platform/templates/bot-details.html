@@ -3,69 +3,152 @@
 {% block heading %}Bot Execution Details{% endblock %}
 
 {% block content %}
-<div class="mx-auto bg-white shadow-xl border border-gray-200 rounded-2xl p-6">
-    <a href="{{ url_for('api.launchpad_bp.launchpad') }}" class="text-blue-600 flex items-center gap-1 mb-6">
-        &larr; Back to Launchpad
+<!-- Note: The 'brand' color classes (e.g., brand-600) are assumed to be defined in your Tailwind setup -->
+<div class="mx-auto bg-white shadow-2xl border border-gray-200 rounded-2xl p-6 max-w-[900px]">
+    <a href="{{ url_for('api.launchpad_bp.launchpad') }}" class="text-blue-600 flex items-center gap-1 mb-6 hover:text-blue-800 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L9.414 11H13a1 1 0 100-2H9.414l1.293-1.293z" clip-rule="evenodd" />
+        </svg>
+        Back to Launchpad
     </a>
 
-    <div class="grid grid-cols-3 max-w-full text-gray-700 max-w-[700px]">
+    <!-- Bot Details Section -->
+    <div class="grid grid-cols-3 gap-4 text-gray-700 mb-6 border-b pb-4">
         <div>
             <p class="text-sm font-medium text-gray-500">Bot Name</p>
-            <p id="detailBotName" class="font-semibold text-lg">{{ bot_name }}</p>
+            <p id="detailBotName" class="font-bold text-lg text-gray-800">{{ bot_name }}</p>
         </div>
 
         <div>
             <p class="text-sm font-medium text-gray-500">Organization</p>
-            <p id="detailOrgName" class="font-semibold text-lg">{{ org_name }}</p>
+            <p id="detailOrgName" class="font-bold text-lg text-gray-800">{{ org_name }}</p>
         </div>
 
         <div>
             <p class="text-sm font-medium text-gray-500">Category</p>
-            <p id="detailCategory" class="font-semibold text-lg">{{ category_name }}</p>
+            <p id="detailCategory" class="font-bold text-lg text-gray-800">{{ category_name }}</p>
         </div>
     </div>
 
+    <!-- Scheduling Tabs and Content -->
     <div class="mt-6">
-        <p class="text-sm font-medium text-gray-500 mb-1">Schedule Time</p>
-        <input 
-            id="scheduleTime"
-            type="datetime-local"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-brand-600 focus:border-brand-600"
-        >
-    </div>
+        <p class="text-lg font-semibold text-gray-700 mb-4">Schedule Bot Execution</p>
+        
+        <!-- Tab Navigation -->
+        <div class="flex border-b border-gray-200 mb-6">
+            <button type="button" data-tab="one_time" 
+                class="tab-button px-4 py-2 text-sm font-medium border-b-2 transition duration-150 ease-in-out tab-active">
+                One Time
+            </button>
+            <button type="button" data-tab="periodically" 
+                class="tab-button px-4 py-2 text-sm font-medium border-b-2 transition duration-150 ease-in-out border-transparent text-gray-500 hover:text-gray-700">
+                Periodically
+            </button>
+            <button type="button" data-tab="weekly" 
+                class="tab-button px-4 py-2 text-sm font-medium border-b-2 transition duration-150 ease-in-out border-transparent text-gray-500 hover:text-gray-700">
+                Weekly
+            </button>
+        </div>
 
-    <div class="mt-4">
-        <p class="text-sm font-medium text-gray-500 mb-1">Schedule Option</p>
-        <select 
-            id="scheduleOption"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-brand-600 focus:border-brand-600"
-        >
-            <option value="5m" selected>Every 5 Minutes</option>
-            <option value="15m">Every 15 Minutes</option>
-            <option value="30m">Every 30 Minutes</option>
-            <option value="1h">Every 1 Hour</option>
-            <option value="3h">Every 3 Hour</option>
-            <option value="5h">Every 5 Hour</option>
-            <option value="daily">Daily</option>
-        </select>
+        <!-- Tab Content Containers -->
+        <div id="tab_content_container" class="space-y-6">
+            
+            <!-- One Time Scheduling -->
+            <div id="tab_content_one_time" data-mode="one_time">
+                <p class="text-sm font-medium text-gray-600 mb-2">Schedule Date and Time (Runs exactly once)</p>
+                <input 
+                    id="oneTimeScheduleTime"
+                    type="datetime-local"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                >
+            </div>
+
+            <!-- Periodically Scheduling -->
+            <div id="tab_content_periodically" data-mode="periodically" class="hidden">
+                <p class="text-sm font-medium text-gray-600 mb-2">Execution Frequency</p>
+                <select 
+                    id="periodicOption"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                >
+                    <option value="5m" selected>Every 5 Minutes</option>
+                    <option value="15m">Every 15 Minutes</option>
+                    <option value="30m">Every 30 Minutes</option>
+                    <option value="1h">Every 1 Hour</option>
+                    <option value="3h">Every 3 Hours</option>
+                    <option value="5h">Every 5 Hours</option>
+                </select>
+
+                <p class="text-sm font-medium text-gray-600 mt-4 mb-2">Exclude Weekends</p>
+                <div class="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg border">
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" id="excludeSaturday" class="h-4 w-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500">
+                        <span class="text-sm font-medium text-gray-700">Exclude Saturday</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" id="excludeSunday" class="h-4 w-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500">
+                        <span class="text-sm font-medium text-gray-700">Exclude Sunday</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Weekly Scheduling -->
+            <div id="tab_content_weekly" data-mode="weekly" class="hidden">
+                <div class="mb-4">
+                    <p class="text-sm font-medium text-gray-600 mb-2">Execution Time</p>
+                    <input 
+                        id="weeklyScheduleTime"
+                        type="time"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    >
+                </div>
+                
+                <p class="text-sm font-medium text-gray-600 mb-2">Days of the Week</p>
+                <div id="weeklyDaysCheckboxes" class="grid grid-cols-4 gap-3 p-3 bg-gray-50 rounded-lg border">
+                    {% set days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] %}
+                    {% for day in days %}
+                    <label class="flex items-center space-x-2">
+                        <!-- Value is 0 (Sunday) to 6 (Saturday) -->
+                        <input type="checkbox" value="{{ loop.index0 }}" class="day-checkbox h-4 w-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500">
+                        <span class="text-sm font-medium text-gray-700">{{ day }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     </div>
     
-    <div class="mt-6 flex gap-4">
+    <!-- Action Buttons -->
+    <div class="mt-8 flex gap-4">
         <button id="runBotBtn" data-bot-id="{{ bot_id }}"
-            class="w-1/2 py-3 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold transition">
+            class="w-1/2 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold transition shadow-md hover:shadow-lg disabled:opacity-50">
             Run Bot
         </button>
 
         <button id="scheduleBtn" data-bot-id="{{ bot_id }}"
-            class="w-1/2 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition">
+            class="w-1/2 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition shadow-md hover:shadow-lg disabled:opacity-50">
             Schedule
         </button>
     </div>
 
-    <p id="triggerMessage" class="text-center text-sm mt-3 text-emerald-600 hidden">Bot Triggered Successfully!</p>
-    <p id="scheduleMessage" class="text-center text-sm mt-3 text-blue-600 hidden">Bot Scheduled Successfully!</p>
+    <!-- Feedback Messages -->
+    <p id="triggerMessage" class="text-center text-sm mt-4 font-semibold text-emerald-600 hidden">Bot Triggered Successfully!</p>
+    <p id="scheduleMessage" class="text-center text-sm mt-4 font-semibold text-blue-600 hidden">Bot Scheduled Successfully!</p>
 </div>
 
+<!-- Custom CSS for Tabs (Tailwind utility classes used in component style block) -->
+<style>
+    .tab-active {
+        border-color: #3b82f6; /* Blue-500, assumed brand color */
+        color: #1f2937; /* Gray-900 */
+        background-color: #f3f4f6; /* Gray-100 */
+        border-radius: 6px 6px 0 0;
+    }
+    .tab-button {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        margin-bottom: -1px; /* Overlap border */
+    }
+</style>
 {% endblock %}
 
 {% block scripts %}
@@ -74,60 +157,151 @@
     const SCHEDULE_API_URL = '/api/schedule/schedule_bot';
     const RUN_API_URL_BASE = '/api/schedule/run/';
     const INDIAN_TIMEZONE = 'Asia/Kolkata'; // Indian Standard Time (IST)
-    const DEFAULT_SCHEDULE_NAME = 'Default Schedule';
+    const DEFAULT_SCHEDULE_NAME = 'User Defined Schedule';
 
+    // --- DOM Elements ---
     const runBtn = document.getElementById('runBotBtn');
     const scheduleBtn = document.getElementById('scheduleBtn');
-    const scheduleTimeInput = document.getElementById('scheduleTime');
-    const scheduleOptionSelect = document.getElementById('scheduleOption');
     const botId = scheduleBtn.getAttribute('data-bot-id');
 
     // Messages
     const runMessage = document.getElementById('triggerMessage');
     const scheduleMessage = document.getElementById('scheduleMessage');
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('[data-mode]');
+    
+    // Inputs
+    const oneTimeScheduleTimeInput = document.getElementById('oneTimeScheduleTime');
+    const periodicOptionSelect = document.getElementById('periodicOption');
+    const excludeSaturdayInput = document.getElementById('excludeSaturday');
+    const excludeSundayInput = document.getElementById('excludeSunday');
+    const weeklyScheduleTimeInput = document.getElementById('weeklyScheduleTime');
+    const dayCheckboxes = document.querySelectorAll('#weeklyDaysCheckboxes .day-checkbox');
+
+    let activeTab = 'one_time'; // Default active tab
+
+    // --- Tab Switching Logic ---
+
+    function switchTab(newTab) {
+        activeTab = newTab;
+
+        // Update button visual state
+        tabButtons.forEach(button => {
+            if (button.getAttribute('data-tab') === newTab) {
+                button.classList.add('tab-active');
+                button.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700');
+            } else {
+                button.classList.remove('tab-active');
+                button.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700');
+            }
+        });
+
+        // Update content visibility
+        tabContents.forEach(content => {
+            if (content.getAttribute('data-mode') === newTab) {
+                content.classList.remove('hidden');
+            } else {
+                content.classList.add('hidden');
+            }
+        });
+    }
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            switchTab(button.getAttribute('data-tab'));
+        });
+    });
+
+    // --- CRON Expression Generation Logic ---
 
     /**
      * Helper function to convert schedule options and time into a CRON expression.
-     * @param {string} option - The selected schedule option (e.g., 'daily', '15m').
-     * @param {string} timeValue - The datetime-local input value (e.g., "2025-11-24T16:30").
+     * @param {string} mode - The scheduling mode ('one_time', 'periodically', 'weekly').
      * @returns {string} A 5-field CRON expression.
      */
-    function getCronExpression(option, timeValue) {
-        // Parse the time part (HH:MM) from the datetime-local string
-        const date = new Date(timeValue);
-        const minute = date.getMinutes();
-        const hour = date.getHours();
+    function getCronExpression(mode) {
+        let minute = '*';
+        let hour = '*';
+        let dayOfMonth = '*';
+        let month = '*';
+        let dayOfWeek = '*'; // 0 (Sun) - 6 (Sat)
 
-        switch (option) {
-            case '5m':
-                // Every 5 minutes, runs every minute divisible by 5.
-                return `*/5 * * * *`;
-            case '15m':
-                // Every 15 minutes, runs every minute divisible by 15.
-                return `*/15 * * * *`;
-            case '30m':
-                // Every 30 minutes, runs every minute divisible by 30.
-                return `*/30 * * * *`;
-            case '1h':
-                // Every hour at the specified minute
-                return `${minute} * * * *`;
-            case '3h':
-                // Every 3 hours at the specified minute
-                return `${minute} */3 * * *`;
-            case '5h':
-                // Every 5 hours at the specified minute
-                return `${minute} */5 * * *`;
-            case 'daily':
-                // Daily at the specified hour and minute
-                return `${minute} ${hour} * * *`;
+        switch (mode) {
+            case 'one_time':
+                const selectedDate = oneTimeScheduleTimeInput.value;
+                if (!selectedDate) {
+                    throw new Error("Please select a date and time for the One Time schedule.");
+                }
+                const date = new Date(selectedDate);
+                
+                // CRON: minute hour day_of_month month *
+                minute = date.getMinutes();
+                hour = date.getHours();
+                dayOfMonth = date.getDate();
+                month = date.getMonth() + 1; // getMonth() is 0-indexed
+                dayOfWeek = '*'; // Run only on the specific date
+
+                return `${minute} ${hour} ${dayOfMonth} ${month} *`;
+
+            case 'periodically':
+                const option = periodicOptionSelect.value;
+                
+                // Determine Day of Week (DOW)
+                const excludeSat = excludeSaturdayInput.checked;
+                const excludeSun = excludeSundayInput.checked;
+                
+                if (excludeSat && excludeSun) {
+                    dayOfWeek = '1-5'; // Monday to Friday
+                } else if (excludeSat && !excludeSun) {
+                    dayOfWeek = '0-5'; // Sunday to Friday (0=Sun, 5=Fri)
+                } else if (!excludeSat && excludeSun) {
+                    dayOfWeek = '1-6'; // Monday to Saturday (1=Mon, 6=Sat)
+                } else {
+                    dayOfWeek = '*'; // All days
+                }
+
+                // Determine Interval CRON
+                switch (option) {
+                    case '5m': return `*/5 * * * ${dayOfWeek}`;
+                    case '15m': return `*/15 * * * ${dayOfWeek}`;
+                    case '30m': return `*/30 * * * ${dayOfWeek}`;
+                    // For hourly/multi-hourly, we need to pick a minute (defaulting to minute 0)
+                    case '1h': return `0 * * * ${dayOfWeek}`;
+                    case '3h': return `0 */3 * * ${dayOfWeek}`;
+                    case '5h': return `0 */5 * * ${dayOfWeek}`;
+                    default: throw new Error("Invalid periodic option.");
+                }
+
+            case 'weekly':
+                const timeValue = weeklyScheduleTimeInput.value;
+                if (!timeValue) {
+                    throw new Error("Please select a time for the Weekly schedule.");
+                }
+                const [h, m] = timeValue.split(':').map(Number);
+                minute = m;
+                hour = h;
+                
+                // Get selected days (0=Sun to 6=Sat)
+                const selectedDays = Array.from(dayCheckboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value)
+                    .join(',');
+
+                if (!selectedDays) {
+                    throw new Error("Please select at least one day of the week.");
+                }
+                
+                // CRON: minute hour * * day_of_week_list
+                dayOfWeek = selectedDays; 
+                return `${minute} ${hour} * * ${dayOfWeek}`;
+
             default:
-                // Default to daily if something goes wrong
-                return `${minute} ${hour} * * *`;
+                throw new Error("Unknown scheduling mode.");
         }
     }
 
 
-    // --- 1. Run Bot Functionality (Previous implementation) ---
+    // --- 1. Run Bot Functionality (Immediate Run) ---
 
     if (runBtn) {
         runBtn.addEventListener("click", async () => {
@@ -135,41 +309,48 @@
             
             runBtn.disabled = true;
             runBtn.textContent = "Triggering...";
-            runMessage.classList.add('hidden'); // Clear previous schedule message
+            scheduleBtn.disabled = true;
+            runMessage.classList.add('hidden'); 
+            scheduleMessage.classList.add('hidden');
 
             try {
                 const response = await fetch(`${RUN_API_URL_BASE}${botId}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({})
+                    // The backend expects a payload, even if empty
+                    body: JSON.stringify({}) 
                 });
                 
-                console.log(response)
-
                 if (!response.ok) {
-                    throw new Error('Failed to trigger bot run.');
+                    const errorData = await response.json().catch(() => ({ message: "Failed to trigger bot run." }));
+                    throw new Error(`API Error: ${response.status} - ${errorData.message || 'Unknown error'}`);
                 }
                 
                 runBtn.textContent = "Run Bot";
-                runMessage.textContent = "Bot Triggered Successfully!";
+                runMessage.textContent = "Bot Triggered Successfully! Redirecting...";
                 runMessage.classList.remove('hidden');
 
+                // Reload/Redirect user after successful trigger
                 setTimeout(() => {
                     window.location.reload(); 
                 }, 1000);
 
             } catch (error) {
                 console.error("Error running bot:", error);
-                alert("Error: Failed to trigger bot run. Check the console for API details.");
                 
+                // Custom alert/modal should be used instead of native alert()
+                const errorMessage = `Error: Failed to trigger bot run. ${error.message}`;
+                console.log(errorMessage); // Changed alert to console.log
+
                 runBtn.textContent = "Run Bot";
                 runBtn.disabled = false;
+                scheduleBtn.disabled = false;
                 runMessage.classList.add('hidden');
             }
         });
     }
 
-    // --- 2. Schedule Bot Functionality (New implementation) ---
+    // --- 2. Schedule Bot Functionality ---
 
     if (scheduleBtn) {
         scheduleBtn.addEventListener("click", scheduleBot);
@@ -180,22 +361,27 @@
 
         scheduleBtn.disabled = true;
         scheduleBtn.textContent = "Scheduling...";
-        scheduleMessage.classList.add('hidden'); // Clear previous success/error messages
-        runMessage.classList.add('hidden'); // Clear run message
+        runBtn.disabled = true;
+        scheduleMessage.classList.add('hidden');
+        runMessage.classList.add('hidden');
 
-        const selectedTime = scheduleTimeInput.value;
-        const selectedOption = scheduleOptionSelect.value;
-        
-        if (!selectedTime) {
-            alert("Please select a valid time.");
+        let cronExpression;
+        try {
+            // Get CRON expression based on the active tab
+            cronExpression = getCronExpression(activeTab);
+            console.log(`Scheduling mode: ${activeTab}. CRON: ${cronExpression} in ${INDIAN_TIMEZONE}`);
+        } catch (error) {
+            // Handle validation errors from getCronExpression
+            console.error("Validation Error:", error.message);
+            // Custom alert/modal should be used instead of native alert()
+            console.log(`Validation Error: ${error.message}`); // Changed alert to console.log
             scheduleBtn.disabled = false;
             scheduleBtn.textContent = "Schedule";
+            runBtn.disabled = false;
             return;
         }
 
-        const cronExpression = getCronExpression(selectedOption, selectedTime);
-        console.log(`Scheduling with CRON: ${cronExpression} in ${INDIAN_TIMEZONE}`);
-
+        // Payload for the API
         const payload = {
             "bot_id": parseInt(botId),
             "name": DEFAULT_SCHEDULE_NAME,
@@ -218,7 +404,7 @@
 
             // Success feedback
             scheduleBtn.textContent = "Scheduled!";
-            scheduleMessage.textContent = "Bot Scheduled Successfully!";
+            scheduleMessage.textContent = "Bot Scheduled Successfully! Redirecting...";
             scheduleMessage.classList.remove('hidden');
 
             // Wait a moment before reloading
@@ -229,11 +415,13 @@
 
         } catch (error) {
             console.error("Error scheduling bot:", error);
-            alert(`Error scheduling bot: ${error.message}`);
+            // Custom alert/modal should be used instead of native alert()
+            console.log(`Error scheduling bot: ${error.message}`); // Changed alert to console.log
             
             // Reset button state on failure
             scheduleBtn.textContent = "Schedule";
             scheduleBtn.disabled = false;
+            runBtn.disabled = false;
             scheduleMessage.classList.add('hidden');
         }
     }
@@ -241,11 +429,25 @@
 
     // --- Initialization Script ---
     document.addEventListener("DOMContentLoaded", () => {
-        // Set the default value for the datetime-local input to the current time
+        // 1. Set default values for time inputs (current time for one-time, midnight for weekly)
         const now = new Date();
+        
         // Adjust for local timezone offset to display correctly in the input field
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        scheduleTimeInput.value = now.toISOString().slice(0, 16);
+        const isoString = now.toISOString().slice(0, 16);
+        oneTimeScheduleTimeInput.value = isoString;
+
+        // Set weekly time to a default (e.g., 9:00 AM)
+        weeklyScheduleTimeInput.value = "09:00"; 
+        
+        // 2. Set the minimum date for one-time scheduling (to prevent scheduling in the past)
+        const minDate = new Date();
+        // Add 1 minute to ensure the min date is always in the future relative to the current minute
+        minDate.setMinutes(minDate.getMinutes() - minDate.getTimezoneOffset() + 1); 
+        oneTimeScheduleTimeInput.min = minDate.toISOString().slice(0, 16);
+
+        // 3. Ensure the initial tab is correctly set (handles page load)
+        switchTab(activeTab);
     });
 </script>
 {% endblock %}
